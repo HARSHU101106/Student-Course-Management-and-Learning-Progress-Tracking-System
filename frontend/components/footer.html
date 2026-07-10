@@ -1,0 +1,69 @@
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-brand-name">EduTrack</span>
+      <p class="text-sm text-muted">
+        Course management and learning progress, in one calm place.
+      </p>
+    </div>
+    <div class="footer-links">
+      <a href="/frontend/pages/courses.html">Courses</a>
+      <a href="/frontend/pages/progress.html">Progress</a>
+      <a href="#help">Help center</a>
+      <a href="#privacy">Privacy</a>
+    </div>
+    <p class="footer-copyright text-sm text-muted">
+      © 2026 EduTrack. All rights reserved.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    margin-top: var(--space-8);
+  }
+  .footer-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .footer-brand-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--navy-deep);
+    font-size: var(--fs-md);
+  }
+  .footer-links {
+    display: flex;
+    gap: var(--space-5);
+  }
+  .footer-links a {
+    color: var(--text-secondary);
+    font-size: var(--fs-sm);
+  }
+  .footer-links a:hover {
+    color: var(--steel-blue);
+  }
+  .footer-copyright {
+    width: 100%;
+    text-align: center;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-subtle);
+    margin-top: var(--space-2);
+  }
+  @media (min-width: 640px) {
+    .footer-copyright {
+      width: auto;
+      border: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+  }
+</style>

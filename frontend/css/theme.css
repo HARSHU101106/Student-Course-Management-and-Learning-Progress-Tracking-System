@@ -1,0 +1,142 @@
+/* ==========================================================================
+   EduTrack — Theme Tokens
+   "Arctic Reflection" palette
+   ========================================================================== */
+
+:root {
+  /* ---- Core palette -------------------------------------------------- */
+  --color-navy: #243c4c; /* deep navy   — headings, primary text, dark surfaces */
+  --color-steel: #5289ad; /* steel blue  — primary actions, links, focus */
+  --color-slate: #698696; /* slate       — secondary text, borders, icons */
+  --color-mist: #acbcbf; /* mist        — subtle borders, disabled states */
+  --color-ivory: #f4fcfb; /* ivory       — page background, light surfaces */
+
+  /* ---- Derived surfaces ------------------------------------------------ */
+  --surface-page: var(--color-ivory);
+  --surface-card: #ffffff;
+  --surface-card-alt: #eef5f4;
+  --surface-navy-90: rgba(36, 60, 76, 0.9);
+  --surface-navy-70: rgba(36, 60, 76, 0.7);
+  --surface-frost: rgba(244, 252, 251, 0.65);
+  --surface-frost-border: rgba(255, 255, 255, 0.4);
+
+  /* ---- Text -------------------------------------------------------- */
+  --text-primary: var(--color-navy);
+  --text-secondary: var(--color-slate);
+  --text-muted: #8ea0aa;
+  --text-inverse: var(--color-ivory);
+  --text-inverse-muted: rgba(244, 252, 251, 0.72);
+
+  /* ---- Semantic ------------------------------------------------------ */
+  --color-success: #3fa37a;
+  --color-success-bg: #e3f5ec;
+  --color-warning: #c98a3b;
+  --color-warning-bg: #fbeede;
+  --color-danger: #c05b4d;
+  --color-danger-bg: #fbeae7;
+  --color-info: var(--color-steel);
+  --color-info-bg: #e7f0f6;
+
+  /* ---- Gradients & accents -------------------------------------------- */
+  --gradient-hero: linear-gradient(
+    135deg,
+    #1b2e3b 0%,
+    #243c4c 45%,
+    #3e6580 100%
+  );
+  --gradient-brand: linear-gradient(
+    120deg,
+    var(--color-steel) 0%,
+    var(--color-navy) 100%
+  );
+  --gradient-ring: conic-gradient(
+    var(--color-steel) calc(var(--pct, 0) * 1%),
+    var(--color-mist) 0
+  );
+
+  /* ---- Typography -------------------------------------------------- */
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.6;
+
+  /* ---- Spacing scale ------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5.5rem;
+
+  /* ---- Radius & elevation --------------------------------------------- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm:
+    0 1px 2px rgba(36, 60, 76, 0.06), 0 1px 1px rgba(36, 60, 76, 0.04);
+  --shadow-md:
+    0 6px 20px rgba(36, 60, 76, 0.1), 0 2px 6px rgba(36, 60, 76, 0.06);
+  --shadow-lg:
+    0 20px 45px rgba(36, 60, 76, 0.16), 0 6px 16px rgba(36, 60, 76, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(82, 137, 173, 0.35);
+
+  /* ---- Motion ------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+
+  /* ---- Layout ------------------------------------------------------- */
+  --container-max: 1200px;
+  --sidebar-width: 264px;
+  --navbar-height: 72px;
+}
+
+/* ---- Backward-compatible aliases -------------------------------------
+   Some earlier component drafts reference this shorter naming scheme.
+   Kept in sync with the canonical tokens above so every fragment renders
+   identically regardless of which variable names it uses. ------------- */
+:root {
+  --navy-deep: var(--color-navy);
+  --steel-blue: var(--color-steel);
+  --steel-blue-60: rgba(82, 137, 173, 0.6);
+  --steel-blue-10: rgba(82, 137, 173, 0.1);
+  --slate-15: rgba(105, 134, 150, 0.15);
+  --white: #ffffff;
+  --bg-page: var(--surface-page);
+  --bg-surface: var(--surface-card);
+  --border-subtle: rgba(105, 134, 150, 0.14);
+  --success: var(--color-success);
+  --success-bg: var(--color-success-bg);
+  --warning: var(--color-warning);
+  --warning-bg: var(--color-warning-bg);
+  --duration-fast: var(--dur-fast);
+  --duration-med: var(--dur-base);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}

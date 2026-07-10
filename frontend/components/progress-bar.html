@@ -1,0 +1,73 @@
+<!-- Linear variant: use inside lists, tables, cards -->
+<div class="progress-row" data-progress="value-here">
+  <div class="progress-track">
+    <div class="progress-fill" style="width: 45%"></div>
+  </div>
+  <span class="progress-value">45%</span>
+</div>
+
+<!-- Ring variant: use for hero / summary stats -->
+<div class="progress-ring-wrap">
+  <svg class="progress-ring" width="96" height="96" viewBox="0 0 96 96">
+    <circle class="ring-track" cx="48" cy="48" r="40"></circle>
+    <circle
+      class="ring-fill"
+      cx="48"
+      cy="48"
+      r="40"
+      stroke-dasharray="251.3"
+      stroke-dashoffset="94"
+    ></circle>
+  </svg>
+  <div class="progress-ring-label">
+    <strong>63%</strong>
+    <span class="text-muted text-sm">complete</span>
+  </div>
+</div>
+
+<style>
+  .progress-ring-wrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .progress-ring-wrap svg.progress-ring {
+    background: none;
+    border-radius: 0;
+  }
+  .progress-ring-wrap svg.progress-ring::before {
+    content: none;
+  }
+  .ring-track {
+    fill: none;
+    stroke: var(--surface-card-alt, #eef5f4);
+    stroke-width: 8;
+  }
+  .ring-fill {
+    fill: none;
+    stroke: var(--steel-blue);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 48px 48px;
+    transition: stroke-dashoffset var(--dur-slow, 420ms) var(--ease-out, ease);
+  }
+  .progress-ring-label {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+  }
+  .progress-ring-label strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--navy-deep);
+  }
+
+  /* stroke-dashoffset formula: circumference * (1 - percent)
+     circumference (r=40) = 251.3   e.g. 63% -> offset = 251.3 * 0.37 ≈ 93 */
+</style>

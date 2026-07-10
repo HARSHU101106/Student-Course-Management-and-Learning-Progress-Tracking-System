@@ -1,0 +1,174 @@
+/* ==========================================================================
+   EduTrack — Progress Tracker
+   ========================================================================== */
+
+.progress-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.progress-overview__card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+.progress-overview__text .stat-value {
+  display: block;
+}
+.progress-overview__text .stat-label {
+  display: block;
+  margin-top: 2px;
+}
+
+/* ---- Per-course progress list ---------------------------------- */
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.progress-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+.progress-row__thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-brand);
+}
+.progress-row__body {
+  min-width: 0;
+}
+.progress-row__title {
+  font-weight: 600;
+  color: var(--color-navy);
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-sm);
+}
+.progress-row__pct {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-steel);
+  font-size: var(--fs-sm);
+  min-width: 48px;
+  text-align: right;
+}
+
+/* ---- Milestone timeline ------------------------------------------- */
+.timeline {
+  position: relative;
+  padding-left: var(--space-6);
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--color-mist);
+  opacity: 0.6;
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--space-5);
+}
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -29px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface-card);
+  border: 3px solid var(--color-mist);
+}
+.timeline-item.is-done::before {
+  border-color: var(--color-success);
+  background: var(--color-success);
+}
+.timeline-item.is-current::before {
+  border-color: var(--color-steel);
+  box-shadow: 0 0 0 4px rgba(82, 137, 173, 0.2);
+}
+.timeline-item__title {
+  font-weight: 600;
+  color: var(--color-navy);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+.timeline-item__date {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* ---- Weekly activity chart ----------------------------------------- */
+.week-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  height: 120px;
+}
+.week-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+.week-chart__bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 6px 6px 0 0;
+  background: var(--color-mist);
+  margin-top: auto;
+}
+.week-chart__bar.is-active {
+  background: var(--gradient-brand);
+}
+.week-chart__label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* ---- Certificate strip -------------------------------------------- */
+.cert-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--gradient-hero);
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+.cert-strip h3 {
+  color: var(--text-inverse);
+  margin-bottom: var(--space-1);
+}
+.cert-strip p {
+  color: var(--text-inverse-muted);
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .progress-overview {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .cert-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+}

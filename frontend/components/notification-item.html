@@ -1,0 +1,75 @@
+<li class="notification-item is-unread">
+  <span class="notification-icon notification-icon--info">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 4.5v4M8 11h.01"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+      />
+      <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4" />
+    </svg>
+  </span>
+  <div class="notification-body">
+    <p class="notification-text">
+      <strong>New module unlocked:</strong> "Graph Traversal" is now available
+      in Data Structures &amp; Algorithms.
+    </p>
+    <span class="notification-time text-muted text-sm">2 hours ago</span>
+  </div>
+  <span class="notification-dot" aria-hidden="true"></span>
+</li>
+
+<style>
+  .notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    list-style: none;
+    transition: background var(--duration-fast);
+  }
+  .notification-item:hover {
+    background: var(--slate-15);
+  }
+  .notification-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .notification-icon--info {
+    background: var(--steel-blue-10);
+    color: var(--steel-blue);
+  }
+  .notification-icon--success {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  .notification-icon--warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+  }
+  .notification-body {
+    flex: 1;
+  }
+  .notification-text {
+    margin: 0 0 var(--space-1);
+    font-size: var(--fs-sm);
+    color: var(--text-primary);
+  }
+  .notification-item.is-unread .notification-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--steel-blue);
+    margin-top: 6px;
+  }
+  .notification-item:not(.is-unread) .notification-dot {
+    visibility: hidden;
+  }
+</style>

@@ -1,0 +1,91 @@
+<article class="course-card card card--interactive" data-course-id="">
+  <div
+    class="course-card-cover"
+    style="
+      background-image: url(&quot;/frontend/public/images/course-placeholder.jpg&quot;);
+    "
+  >
+    <span class="badge badge-neutral course-card-category"
+      >Computer Science</span
+    >
+  </div>
+
+  <div class="course-card-body">
+    <div class="flex-between">
+      <span class="eyebrow">4 modules · 12 hrs</span>
+      <span class="badge badge-success"
+        ><span class="badge-dot"></span>Enrolled</span
+      >
+    </div>
+
+    <h3 class="course-card-title">Data Structures &amp; Algorithms</h3>
+    <p class="course-card-desc text-sm">
+      Build a working intuition for arrays, trees and graphs through applied
+      problem sets.
+    </p>
+
+    <div class="course-card-instructor">
+      <div class="avatar avatar-sm">RN</div>
+      <span class="text-sm">Dr. Radhika Nair</span>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-track">
+        <div class="progress-fill" style="width: 62%"></div>
+      </div>
+      <span class="progress-value">62%</span>
+    </div>
+  </div>
+
+  <div class="card-footer flex-between">
+    <span class="text-sm text-muted">Next: Binary Trees</span>
+    <a href="/frontend/pages/course-details.html" class="btn-primary btn-sm"
+      >Continue</a
+    >
+  </div>
+</article>
+
+<style>
+  .course-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .course-card-cover {
+    height: 132px;
+    background-color: var(--steel-blue-10);
+    background-size: cover;
+    background-position: center;
+    background-image: linear-gradient(
+      135deg,
+      var(--steel-blue) 0%,
+      var(--navy-deep) 100%
+    );
+    display: flex;
+    align-items: flex-start;
+    padding: var(--space-3);
+  }
+  .course-card-category {
+    background: rgba(244, 252, 251, 0.9);
+  }
+  .course-card-body {
+    padding: var(--space-4) var(--space-5) var(--space-2);
+  }
+  .course-card-title {
+    font-size: var(--fs-md);
+    margin-bottom: var(--space-2);
+  }
+  .course-card-desc {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+  }
+  .course-card-instructor {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  .course-card .card-footer {
+    margin: 0 var(--space-5) var(--space-2);
+    padding-top: var(--space-3);
+  }
+</style>
