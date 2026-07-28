@@ -1,0 +1,106 @@
+/* ============================================================
+   BASE — reset, typography, utility layer
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--color-navy);
+  background: var(--color-ivory);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: var(--color-steel); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  margin: 0 0 var(--space-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: var(--fs-3xl); line-height: 1.1; }
+h2 { font-size: var(--fs-2xl); line-height: 1.15; }
+h3 { font-size: var(--fs-xl); }
+h4 { font-size: var(--fs-md); }
+p { margin: 0 0 var(--space-3); color: var(--color-slate); }
+.mono { font-family: var(--font-mono); }
+
+/* ---- Focus visibility ---- */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Layout helpers ---- */
+.container { max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-6); }
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: var(--space-1); } .gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); } .gap-4 { gap: var(--space-4); }
+.gap-5 { gap: var(--space-5); }
+.grid { display: grid; gap: var(--space-5); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.text-center { text-align: center; }
+.text-muted { color: var(--color-slate); }
+.text-sm { font-size: var(--fs-sm); }
+.hidden { display: none !important; }
+.w-full { width: 100%; }
+
+/* ---- App shell ---- */
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  min-height: 100vh;
+}
+.main-panel { display: flex; flex-direction: column; min-height: 100vh; }
+.main-content { flex: 1; padding: var(--space-6); }
+
+/* ---- Reflection wave motif (signature background element) ---- */
+.reflection-wave {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+}
+
+/* ---- Frosted glass utility ---- */
+.glass {
+  background: rgba(244, 252, 251, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.glass-dark {
+  background: rgba(36, 60, 76, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--color-mist); border-radius: var(--radius-full); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; transform: translateX(-100%); transition: transform var(--dur-base) var(--ease-standard); z-index: 50; }
+  .sidebar.open { transform: translateX(0); }
+}

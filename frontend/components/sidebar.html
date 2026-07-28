@@ -1,0 +1,28 @@
+<!-- ============================================================
+     sidebar.html — authenticated app sidebar
+     (embedded directly in authenticated pages; data-page marks active link)
+     ============================================================ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="dot"></span> EduTrack
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" data-page="dashboard" href="student-dashboard.html">🏠 Dashboard</a>
+    <a class="sidebar-link" data-page="courses" href="courses.html">📚 Courses</a>
+    <a class="sidebar-link" data-page="enrollments" href="my-enrollments.html">🎓 My Enrollments</a>
+    <a class="sidebar-link" data-page="progress" href="progress.html">📈 Progress</a>
+    <a class="sidebar-link" data-page="notifications" href="notifications.html">🔔 Notifications</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="#" onclick="AuthService.logout(); return false;" style="color:var(--color-mist)">↩ Sign out</a>
+  </div>
+</aside>
+<script>
+  // Highlight active sidebar link on the page it's embedded in
+  document.addEventListener('DOMContentLoaded', () => {
+    const current = document.body.dataset.page;
+    document.querySelectorAll('.sidebar-link').forEach(a => {
+      if (a.dataset.page === current) a.classList.add('active');
+    });
+  });
+</script>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — EduTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages/dashboard.css">
+</head>
+<body data-page="admin-dashboard">
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> EduTrack <span class="badge badge-neutral" style="margin-left:auto">Admin</span></div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link active" href="admin-dashboard.html">🏠 Overview</a>
+      <a class="sidebar-link" href="courses.html">📚 Manage Courses</a>
+      <a class="sidebar-link" href="my-enrollments.html">🎓 Enrollments</a>
+      <a class="sidebar-link" href="progress.html">📈 Reports</a>
+      <a class="sidebar-link" href="notifications.html">🔔 Notifications</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#" onclick="AuthService.logout(); return false;" style="color:var(--color-mist)">↩ Sign out</a>
+    </div>
+  </aside>
+
+  <div class="main-panel">
+    <header class="topbar">
+      <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Search students, courses…"></div>
+      <div class="topbar-actions">
+        <a class="notif-dot" href="notifications.html" style="font-size:20px">🔔</a>
+        <div class="avatar" id="topbar-avatar">A</div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="welcome-banner">
+        <h2 style="color:#fff">Platform overview</h2>
+        <p>A snapshot of student activity and enrollment health.</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="card stat-card"><div class="stat-icon">👥</div><span class="stat-value" id="stat-total-students">0</span><span class="stat-label">Total students</span></div>
+        <div class="card stat-card"><div class="stat-icon">📚</div><span class="stat-value" id="stat-total-courses">0</span><span class="stat-label">Total courses</span></div>
+        <div class="card stat-card"><div class="stat-icon">🎓</div><span class="stat-value" id="stat-active-enrollments">0</span><span class="stat-label">Active enrollments</span></div>
+        <div class="card stat-card"><div class="stat-icon">✅</div><span class="stat-value" id="stat-completion-rate">0%</span><span class="stat-label">Completion rate</span></div>
+      </div>
+
+      <section>
+        <div class="section-title"><h3>Recent enrollments</h3></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th><th>Status</th></tr></thead>
+            <tbody id="enrollments-tbody">
+              <tr><td colspan="4" class="text-center text-muted">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/helpers.js"></script>
+<script src="../js/api/axiosClient.js"></script>
+<script src="../js/api/dashboardService.js"></script>
+<script src="../js/pages/adminDashboard.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = AuthUtil.getUser();
+    if (user) Helpers.qs('#topbar-avatar').textContent = Helpers.initials(user.name);
+  });
+</script>
+</body>
+</html>

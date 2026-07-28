@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses — EduTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages/courses.css">
+</head>
+<body data-page="courses">
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> EduTrack</div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" href="student-dashboard.html">🏠 Dashboard</a>
+      <a class="sidebar-link active" href="courses.html">📚 Courses</a>
+      <a class="sidebar-link" href="my-enrollments.html">🎓 My Enrollments</a>
+      <a class="sidebar-link" href="progress.html">📈 Progress</a>
+      <a class="sidebar-link" href="notifications.html">🔔 Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><a href="#" onclick="AuthService.logout(); return false;" style="color:var(--color-mist)">↩ Sign out</a></div>
+  </aside>
+
+  <div class="main-panel">
+    <header class="topbar">
+      <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Search…"></div>
+      <div class="topbar-actions"><a class="notif-dot" href="notifications.html" style="font-size:20px">🔔</a><div class="avatar" id="topbar-avatar">S</div></div>
+    </header>
+
+    <main class="main-content">
+      <div class="card-header">
+        <div>
+          <span class="card-eyebrow">Catalogue</span>
+          <h2 style="margin-top:4px">Find your next course</h2>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="input-group">
+          <span class="icon">🔍</span>
+          <input class="input-field" id="course-search" type="text" placeholder="Search courses by title…">
+        </div>
+        <span class="chip active" data-category="all">All</span>
+        <span class="chip" data-category="programming">Programming</span>
+        <span class="chip" data-category="design">Design</span>
+        <span class="chip" data-category="business">Business</span>
+        <span class="chip" data-category="data">Data</span>
+      </div>
+
+      <div class="course-grid" id="course-grid">
+        <div class="skeleton" style="height:220px;"></div>
+        <div class="skeleton" style="height:220px;"></div>
+        <div class="skeleton" style="height:220px;"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/helpers.js"></script>
+<script src="../js/api/axiosClient.js"></script>
+<script src="../js/api/courseService.js"></script>
+<script src="../js/pages/courseList.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = AuthUtil.getUser();
+    if (user) Helpers.qs('#topbar-avatar').textContent = Helpers.initials(user.name);
+  });
+</script>
+</body>
+</html>

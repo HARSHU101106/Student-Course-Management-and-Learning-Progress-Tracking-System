@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications — EduTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages/progress.css">
+</head>
+<body data-page="notifications">
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> EduTrack</div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" href="student-dashboard.html">🏠 Dashboard</a>
+      <a class="sidebar-link" href="courses.html">📚 Courses</a>
+      <a class="sidebar-link" href="my-enrollments.html">🎓 My Enrollments</a>
+      <a class="sidebar-link" href="progress.html">📈 Progress</a>
+      <a class="sidebar-link active" href="notifications.html">🔔 Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><a href="#" onclick="AuthService.logout(); return false;" style="color:var(--color-mist)">↩ Sign out</a></div>
+  </aside>
+
+  <div class="main-panel">
+    <header class="topbar">
+      <h3 style="margin:0">Notifications</h3>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" id="mark-all-read">Mark all read</button>
+        <div class="avatar" id="topbar-avatar">S</div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="notif-filter-tabs">
+        <span class="chip active" data-filter="all">All</span>
+        <span class="chip" data-filter="unread">Unread</span>
+      </div>
+      <div class="card" id="notification-list">
+        <div class="skeleton" style="height:56px;margin-bottom:8px;"></div>
+        <div class="skeleton" style="height:56px;"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/helpers.js"></script>
+<script src="../js/api/axiosClient.js"></script>
+<script src="../js/api/notificationService.js"></script>
+<script src="../js/socket/socketClient.js"></script>
+<script src="../js/pages/notifications.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = AuthUtil.getUser();
+    if (user) Helpers.qs('#topbar-avatar').textContent = Helpers.initials(user.name);
+    SocketClient.init();
+  });
+</script>
+</body>
+</html>

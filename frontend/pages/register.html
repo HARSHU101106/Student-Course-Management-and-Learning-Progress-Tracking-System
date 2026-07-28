@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account — EduTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages/login.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-visual">
+    <div class="brand"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--color-steel);display:inline-block"></span> EduTrack</div>
+    <div class="quote">
+      <h2>"Start where you are."</h2>
+      <p>Create your account and pick your first course in under a minute.</p>
+    </div>
+    <svg class="auth-wave-svg" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#5289AD" d="M0,100 C 240,180 480,20 720,100 C 960,180 1200,20 1440,100 L1440,200 L0,200 Z"></path>
+    </svg>
+  </div>
+
+  <div class="auth-form-side">
+    <div class="auth-card">
+      <span class="eyebrow">Join EduTrack</span>
+      <h1>Create your account</h1>
+      <p>Already have one? <a href="login.html">Sign in</a></p>
+
+      <form id="register-form" style="margin-top:24px;">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input class="input-field" type="text" id="name" placeholder="Jordan Rivera" required>
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input class="input-field" type="email" id="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input-field" type="password" id="password" placeholder="At least 8 characters" required minlength="8">
+        </div>
+        <div class="field">
+          <label for="confirm-password">Confirm password</label>
+          <input class="input-field" type="password" id="confirm-password" placeholder="Re-enter password" required minlength="8">
+        </div>
+        <button type="submit" id="register-submit" class="btn btn-primary btn-block">Create account</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/helpers.js"></script>
+<script src="../js/api/axiosClient.js"></script>
+<script src="../js/api/authService.js"></script>
+<script src="../js/pages/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+/* ============================================================
+   COURSES — catalogue, details, enrollments
+   ============================================================ */
+.filter-bar { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; }
+.filter-bar .input-group { flex: 1; min-width: 240px; }
+.chip { padding: 0.4rem 0.9rem; border-radius: var(--radius-full); border: 1px solid var(--color-mist); font-size: var(--fs-xs); font-weight: 600; color: var(--color-slate); }
+.chip.active { background: var(--color-navy); color: #fff; border-color: var(--color-navy); }
+
+.course-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+
+.course-hero { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-6); margin-bottom: var(--space-6); }
+.course-hero .banner {
+  border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--color-steel), var(--color-navy));
+  min-height: 260px; display: flex; align-items: flex-end; padding: var(--space-6); color: #fff; position: relative; overflow: hidden;
+}
+.course-hero .enroll-card { align-self: start; }
+.course-hero .enroll-card .price { font-family: var(--font-mono); font-size: var(--fs-2xl); color: var(--color-navy); font-weight: 700; }
+
+.tab-bar { display: flex; gap: var(--space-5); border-bottom: 1px solid var(--color-mist-30); margin-bottom: var(--space-5); }
+.tab-bar .tab { padding: var(--space-3) 0; font-weight: 600; color: var(--color-slate); border-bottom: 2px solid transparent; }
+.tab-bar .tab.active { color: var(--color-navy); border-color: var(--color-steel); }
+
+.curriculum-item { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); }
+.curriculum-item:hover { background: var(--color-steel-10); }
+.curriculum-item.done .lesson-icon { background: var(--color-success); color: #fff; }
+.lesson-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--color-mist-30); display: flex; align-items: center; justify-content: center; font-size: var(--fs-xs); }
+
+@media (max-width: 1100px) {
+  .course-grid { grid-template-columns: repeat(2, 1fr); }
+  .course-hero { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) { .course-grid { grid-template-columns: 1fr; } }

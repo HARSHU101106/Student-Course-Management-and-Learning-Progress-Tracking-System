@@ -1,0 +1,28 @@
+/* ============================================================
+   LOGIN / REGISTER — split-screen auth
+   ============================================================ */
+.auth-shell { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+.auth-visual {
+  position: relative; background: var(--color-navy); color: #fff; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-7);
+}
+.auth-visual .brand { display: flex; align-items: center; gap: var(--space-2); font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 700; z-index: 1; }
+.auth-visual .quote { max-width: 420px; z-index: 1; }
+.auth-visual .quote h2 { color: #fff; font-size: var(--fs-2xl); }
+.auth-visual .quote p { color: var(--color-mist); }
+.auth-wave-svg { position: absolute; bottom: -40px; left: 0; width: 100%; opacity: 0.5; }
+
+.auth-form-side { display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
+.auth-card { width: 100%; max-width: 400px; }
+.auth-card .eyebrow { color: var(--color-steel); font-weight: 700; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.08em; }
+.auth-card h1 { margin-top: var(--space-2); }
+.auth-card .switch-link { text-align: center; margin-top: var(--space-5); font-size: var(--fs-sm); color: var(--color-slate); }
+.auth-divider { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-5) 0; color: var(--color-mist); font-size: var(--fs-xs); }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--color-mist-30); }
+.remember-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); font-size: var(--fs-sm); }
+.checkbox-row { display: flex; align-items: center; gap: var(--space-2); }
+
+@media (max-width: 900px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+}

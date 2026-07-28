@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — EduTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages/dashboard.css">
+</head>
+<body data-page="dashboard">
+
+<div class="app-shell">
+  <!-- Sidebar (embedded directly for static-file compatibility) -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> EduTrack</div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" data-page="dashboard" href="student-dashboard.html">🏠 Dashboard</a>
+      <a class="sidebar-link" data-page="courses" href="courses.html">📚 Courses</a>
+      <a class="sidebar-link" data-page="enrollments" href="my-enrollments.html">🎓 My Enrollments</a>
+      <a class="sidebar-link" data-page="progress" href="progress.html">📈 Progress</a>
+      <a class="sidebar-link" data-page="notifications" href="notifications.html">🔔 Notifications</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#" onclick="AuthService.logout(); return false;" style="color:var(--color-mist)">↩ Sign out</a>
+    </div>
+  </aside>
+
+  <div class="main-panel">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search courses, lessons…">
+      </div>
+      <div class="topbar-actions">
+        <a class="notif-dot" href="notifications.html" style="font-size:20px">🔔</a>
+        <div class="avatar" id="topbar-avatar">S</div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="welcome-banner">
+        <h2 style="color:#fff">Welcome back, <span id="welcome-name">there</span> 👋</h2>
+        <p>Here's where your learning stands today.</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="card stat-card">
+          <div class="stat-icon">🎓</div>
+          <span class="stat-value" id="stat-enrolled">0</span>
+          <span class="stat-label">Enrolled courses</span>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon">✅</div>
+          <span class="stat-value" id="stat-completed">0</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon">⏱</div>
+          <span class="stat-value" id="stat-hours">0</span>
+          <span class="stat-label">Hours learned</span>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon">🔥</div>
+          <span class="stat-value" id="stat-streak">0</span>
+          <span class="stat-label">Day streak</span>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <section>
+          <div class="section-title">
+            <h3>Continue learning</h3>
+            <a class="view-all" href="my-enrollments.html">View all →</a>
+          </div>
+          <div id="continue-learning-list" class="flex-col gap-3">
+            <div class="skeleton" style="height:70px;"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-title">
+            <h3>Recent activity</h3>
+            <a class="view-all" href="notifications.html">View all →</a>
+          </div>
+          <div class="card" id="recent-notifications">
+            <div class="skeleton" style="height:40px;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:40px;"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer" style="margin-top:0;">
+      <div class="container footer-bottom" style="border-top:none;">
+        <span>© 2026 EduTrack</span>
+        <span>Arctic Reflection design system</span>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/helpers.js"></script>
+<script src="../js/api/axiosClient.js"></script>
+<script src="../js/api/authService.js"></script>
+<script src="../js/api/dashboardService.js"></script>
+<script src="../js/socket/socketClient.js"></script>
+<script src="../js/pages/studentDashboard.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = AuthUtil.getUser();
+    if (user) Helpers.qs('#topbar-avatar').textContent = Helpers.initials(user.name);
+    document.querySelectorAll('.sidebar-link').forEach(a => { if (a.dataset.page === 'dashboard') a.classList.add('active'); });
+  });
+</script>
+</body>
+</html>

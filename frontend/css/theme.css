@@ -1,0 +1,87 @@
+/* ============================================================
+   ARCTIC REFLECTION — Design Tokens
+   EduTrack Learning Management Platform
+   ============================================================ */
+:root {
+  /* ---- Core palette (from Arctic Reflection swatch) ---- */
+  --color-navy:   #243C4C;   /* deep, authoritative — headers, sidebar */
+  --color-steel:  #5289AD;   /* primary accent — actions, links, focus */
+  --color-slate:  #698696;   /* secondary accent — muted UI, badges */
+  --color-mist:   #ACBCBF;   /* borders, disabled states, dividers */
+  --color-ivory:  #F4FCFB;   /* page background, card surfaces */
+
+  /* ---- Backward-compatible aliases (earlier "Academic Navy" build) ---- */
+  --navy-deep:    var(--color-navy);
+  --steel-blue:   var(--color-steel);
+  --muted-gold:   var(--color-steel);
+  --ivory:        var(--color-ivory);
+  --teal:         var(--color-slate);
+  --slate:        var(--color-mist);
+
+  /* ---- Tints & shades derived from core palette ---- */
+  --color-navy-10:   rgba(36, 60, 76, 0.06);
+  --color-navy-20:   rgba(36, 60, 76, 0.12);
+  --color-navy-60:   rgba(36, 60, 76, 0.6);
+  --color-navy-90:   rgba(36, 60, 76, 0.92);
+  --color-steel-10:  rgba(82, 137, 173, 0.08);
+  --color-steel-20:  rgba(82, 137, 173, 0.16);
+  --color-steel-40:  rgba(82, 137, 173, 0.35);
+  --color-mist-30:   rgba(172, 188, 191, 0.3);
+  --color-white:     #ffffff;
+
+  /* ---- Semantic colors ---- */
+  --color-success:   #3F8F6C;
+  --color-success-bg:#E5F3EC;
+  --color-warning:   #B9822F;
+  --color-warning-bg:#FBF1E1;
+  --color-danger:    #B4453F;
+  --color-danger-bg: #FBE9E8;
+  --color-info:      var(--color-steel);
+  --color-info-bg:   var(--color-steel-10);
+
+  /* ---- Typography ---- */
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-md:   1.125rem;
+  --fs-lg:   1.375rem;
+  --fs-xl:   1.75rem;
+  --fs-2xl:  2.25rem;
+  --fs-3xl:  3rem;
+
+  /* ---- Spacing scale ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* ---- Radius / elevation ---- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(36, 60, 76, 0.08);
+  --shadow-md: 0 8px 24px rgba(36, 60, 76, 0.10);
+  --shadow-lg: 0 20px 48px rgba(36, 60, 76, 0.16);
+  --shadow-ring: 0 0 0 3px var(--color-steel-40);
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 450ms;
+
+  /* ---- Layout ---- */
+  --sidebar-width: 264px;
+  --topbar-height: 72px;
+  --container-max: 1240px;
+}

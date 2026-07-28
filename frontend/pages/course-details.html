@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Details — EduTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/theme.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages/courses.css">
+</head>
+<body data-page="courses">
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> EduTrack</div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" href="student-dashboard.html">🏠 Dashboard</a>
+      <a class="sidebar-link active" href="courses.html">📚 Courses</a>
+      <a class="sidebar-link" href="my-enrollments.html">🎓 My Enrollments</a>
+      <a class="sidebar-link" href="progress.html">📈 Progress</a>
+      <a class="sidebar-link" href="notifications.html">🔔 Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><a href="#" onclick="AuthService.logout(); return false;" style="color:var(--color-mist)">↩ Sign out</a></div>
+  </aside>
+
+  <div class="main-panel">
+    <header class="topbar">
+      <a href="courses.html" class="btn btn-ghost btn-sm">← Back to courses</a>
+      <div class="topbar-actions"><a class="notif-dot" href="notifications.html" style="font-size:20px">🔔</a><div class="avatar" id="topbar-avatar">S</div></div>
+    </header>
+
+    <main class="main-content">
+      <div class="course-hero">
+        <div class="banner">
+          <h1 id="course-title" style="color:#fff">Loading course…</h1>
+        </div>
+        <div class="card enroll-card">
+          <span class="price">Free</span>
+          <p class="text-sm">Full access · self-paced</p>
+          <button id="enroll-btn" class="btn btn-primary btn-block">Enroll now</button>
+          <div style="margin-top:16px;" class="flex-col gap-2 text-sm">
+            <div class="flex justify-between"><span class="text-muted">Instructor</span><span id="course-instructor">—</span></div>
+            <div class="flex justify-between"><span class="text-muted">Duration</span><span id="course-duration">—</span></div>
+            <div class="flex justify-between"><span class="text-muted">Level</span><span id="course-level">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="curriculum">Curriculum</div>
+      </div>
+
+      <div class="tab-panel" id="panel-overview">
+        <div class="card">
+          <h3>About this course</h3>
+          <p id="course-description">Loading description…</p>
+        </div>
+      </div>
+
+      <div class="tab-panel hidden" id="panel-curriculum">
+        <div class="card" id="curriculum-list"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/helpers.js"></script>
+<script src="../js/api/axiosClient.js"></script>
+<script src="../js/api/courseService.js"></script>
+<script src="../js/api/enrollmentService.js"></script>
+<script src="../js/pages/courseDetails.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = AuthUtil.getUser();
+    if (user) Helpers.qs('#topbar-avatar').textContent = Helpers.initials(user.name);
+  });
+</script>
+</body>
+</html>

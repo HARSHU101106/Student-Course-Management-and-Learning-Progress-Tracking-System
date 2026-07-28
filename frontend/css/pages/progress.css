@@ -1,0 +1,20 @@
+/* ============================================================
+   PROGRESS — tracker & notifications
+   ============================================================ */
+.progress-overview { display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-6); margin-bottom: var(--space-6); }
+.ring-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); text-align: center; }
+
+.milestone-list { display: flex; flex-direction: column; gap: 0; }
+.milestone { display: flex; gap: var(--space-4); position: relative; padding-bottom: var(--space-5); }
+.milestone:last-child { padding-bottom: 0; }
+.milestone::before {
+  content: ''; position: absolute; left: 13px; top: 30px; bottom: 0; width: 2px; background: var(--color-mist-30);
+}
+.milestone:last-child::before { display: none; }
+.milestone .dot { width: 28px; height: 28px; border-radius: 50%; background: var(--color-mist-30); color: var(--color-slate); display: flex; align-items: center; justify-content: center; font-size: var(--fs-xs); font-weight: 700; flex-shrink: 0; z-index: 1; }
+.milestone.complete .dot { background: var(--color-success); color: #fff; }
+.milestone.current .dot { background: var(--color-steel); color: #fff; box-shadow: 0 0 0 4px var(--color-steel-20); }
+
+.course-progress-row { display: grid; grid-template-columns: 2fr 1fr 100px; gap: var(--space-4); align-items: center; padding: var(--space-4) 0; border-bottom: 1px solid var(--color-mist-30); }
+
+.notif-filter-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); }
