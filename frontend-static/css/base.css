@@ -1,0 +1,54 @@
+/* base.css — design tokens, reset, typography */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Nunito:wght@700;800;900&display=swap');
+
+:root{
+  color-scheme:light;
+  --bg:#F1F7F8; --surface:#FFFFFF; --surface-2:#E4EFF1; --ink:#10283A; --muted:#48606F; --line:#CADDE2;
+  --primary:#0F6F7C; --on-primary:#FFFFFF; --primary-soft:#D3EEF1; --primary-text:#0B5C67;
+  --sun:#FFC53D; --on-sun:#10283A; --sun-soft:#FFF0C7; --sun-text:#6B4A00;
+  --coral:#F0705F; --coral-soft:#FFE0DB; --coral-text:#A73222;
+  --mint:#4FC79A; --mint-soft:#D5F4E7; --mint-text:#136B45;
+  --shadow:0 16px 32px -20px rgba(16,40,58,.5),0 2px 6px -2px rgba(16,40,58,.12);
+  --edge:rgba(6,32,42,.3);
+  --font-display:'Nunito','Trebuchet MS',ui-rounded,system-ui,sans-serif;
+  --font-body:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0B1A24; --surface:#122736; --surface-2:#19364A; --ink:#E9F4F6; --muted:#A3BBC6; --line:#25475A;
+  --primary:#53C7D6; --on-primary:#062029; --primary-soft:#164556; --primary-text:#7FDCE8;
+  --sun-soft:#3B3216; --sun-text:#FFD36E;
+  --coral:#FF8A79; --coral-soft:#4A2622; --coral-text:#FFA093;
+  --mint:#5BD6A5; --mint-soft:#15402F; --mint-text:#7BE3B7;
+  --shadow:0 16px 32px -20px rgba(0,0,0,.8),0 2px 6px -2px rgba(0,0,0,.4);
+  --edge:rgba(0,0,0,.45);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:800;line-height:1.15;letter-spacing:-.01em;margin:0 0 .5em}
+h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:900}
+h2{font-size:clamp(1.4rem,3vw,2rem)}
+h3{font-size:1.1rem}
+p{margin:0 0 1rem}
+a{color:var(--primary-text)}
+img,svg{max-width:100%}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--primary);outline-offset:3px;border-radius:8px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.container{width:min(1160px,100% - 2rem);margin-inline:auto}
+.muted{color:var(--muted)}
+.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
+
+/* buttons, reused on every page */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.25rem;border-radius:14px;border:0;font-weight:700;text-decoration:none;transition:transform .12s,box-shadow .12s;cursor:pointer}
+.btn.primary{background:var(--primary);color:var(--on-primary);box-shadow:0 4px 0 var(--edge)}
+.btn.sun{background:var(--sun);color:var(--on-sun);box-shadow:0 4px 0 var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.small{min-height:40px;padding:0 1rem;font-size:.92rem}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--edge)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.link-btn{background:none;border:0;color:var(--primary-text);font-weight:700;text-decoration:underline;padding:.4rem 0;min-height:44px}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in | AdaptLearn</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="login.html">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>AdaptLearn</a>
+    <nav class="main-nav" id="mainNav" aria-label="Main"></nav>
+    <div class="nav-tools" id="navTools"></div>
+    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">&#9776;</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container auth-wrap">
+    <div class="card">
+      <h1 style="font-size:1.7rem">Welcome back</h1>
+      <p class="muted" style="margin-top:-.5rem">Log in to pick up where you left off.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" aria-describedby="email-msg">
+          <p class="msg" id="email-msg"></p>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input id="password" name="password" type="password" autocomplete="current-password" aria-describedby="password-msg">
+            <button type="button" class="reveal" aria-label="Show password">Show</button>
+          </div>
+          <p class="msg" id="password-msg"></p>
+        </div>
+        <button class="btn primary" type="submit" style="width:100%">Log in</button>
+      </form>
+
+      <p class="form-note">Demo: any valid email with an 8 character password works. Use <strong>admin@demo.com</strong> for the admin view.</p>
+      <p class="muted" style="margin:1rem 0 0">New here? <a href="register.html">Create an account</a></p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container"><p style="margin:0">AdaptLearn is a student project prototype.</p></div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+<script type="module">
+  import { rules, bindForm } from './js/validation.js';
+  import { login } from './js/auth.js';
+  import { toast } from './js/ui.js';
+
+  const form = document.getElementById('loginForm');
+  bindForm(form, { email: rules.email, password: rules.loginPassword }, async (data) => {
+    try {
+      const user = await login(data.get('email').trim(), data.get('password'));
+      toast(`Welcome, ${user.name}.`);
+      location.href = 'dashboard.html';
+    } catch (err) {
+      toast('Login failed. Check your email and password.');
+    }
+  });
+  document.getElementById('email').focus();
+</script>
+</body>
+</html>

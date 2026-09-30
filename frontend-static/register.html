@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create account | AdaptLearn</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="register.html">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>AdaptLearn</a>
+    <nav class="main-nav" id="mainNav" aria-label="Main"></nav>
+    <div class="nav-tools" id="navTools"></div>
+    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">&#9776;</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container auth-wrap">
+    <div class="card">
+      <h1 style="font-size:1.7rem">Create your account</h1>
+      <p class="muted" style="margin-top:-.5rem">Free for every student.</p>
+
+      <form id="regForm" novalidate>
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" autocomplete="name" aria-describedby="name-msg">
+          <p class="msg" id="name-msg"></p>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" aria-describedby="email-msg">
+          <p class="msg" id="email-msg"></p>
+        </div>
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" aria-describedby="phone-hint phone-msg">
+          <p class="hint" id="phone-hint">10 digits, no country code.</p>
+          <p class="msg" id="phone-msg"></p>
+        </div>
+        <div class="field">
+          <label for="dept">Department</label>
+          <select id="dept" name="dept" aria-describedby="dept-msg">
+            <option value="">Select department</option>
+            <option>Computer Science</option>
+            <option>Electronics</option>
+            <option>Mechanical</option>
+            <option>Civil</option>
+            <option>Data Science</option>
+          </select>
+          <p class="msg" id="dept-msg"></p>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input id="password" name="password" type="password" autocomplete="new-password" aria-describedby="password-hint password-msg">
+            <button type="button" class="reveal" aria-label="Show password">Show</button>
+          </div>
+          <p class="hint" id="password-hint">At least 8 characters with a letter and a number.</p>
+          <p class="msg" id="password-msg"></p>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm password</label>
+          <div class="pw-wrap">
+            <input id="confirm" name="confirm" type="password" autocomplete="new-password" aria-describedby="confirm-msg">
+            <button type="button" class="reveal" aria-label="Show password">Show</button>
+          </div>
+          <p class="msg" id="confirm-msg"></p>
+        </div>
+        <button class="btn primary" type="submit" style="width:100%">Create account</button>
+      </form>
+
+      <p class="muted" style="margin:1rem 0 0">Already registered? <a href="login.html">Log in</a></p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container"><p style="margin:0">AdaptLearn is a student project prototype.</p></div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+<script type="module">
+  import { rules, bindForm } from './js/validation.js';
+  import { register } from './js/auth.js';
+  import { toast } from './js/ui.js';
+
+  const form = document.getElementById('regForm');
+  bindForm(form, {
+    name: rules.name, email: rules.email, phone: rules.phone,
+    dept: rules.dept, password: rules.password, confirm: rules.confirm
+  }, async (data) => {
+    const user = await register({
+      name: data.get('name').trim(),
+      email: data.get('email').trim(),
+      phone: data.get('phone'),
+      dept: data.get('dept'),
+      password: data.get('password')
+    });
+    toast(`Account created. Welcome, ${user.name}.`);
+    location.href = 'dashboard.html';
+  });
+  document.getElementById('name').focus();
+</script>
+</body>
+</html>

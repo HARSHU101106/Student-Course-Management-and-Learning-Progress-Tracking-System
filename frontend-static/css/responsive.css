@@ -1,0 +1,29 @@
+/* responsive.css — mobile-first breakpoints: 480 / 768 / 1024 */
+
+/* tablet and up */
+@media(min-width:768px){
+  .hero{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:2.5rem;padding:3rem 0 1.5rem}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .dash-grid{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+  .lesson-grid{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .steps li:not(:last-child)::after{content:"";position:absolute;top:22px;left:64px;right:-1rem;border-top:3px dotted var(--line)}
+}
+
+/* desktop */
+@media(min-width:1024px){
+  .container{width:min(1160px,100% - 3rem)}
+  .course-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* mobile only: collapse nav into menu, stack everything (base CSS is already mobile) */
+@media(max-width:479px){
+  .stats{grid-template-columns:1fr 1fr}
+  .cta-row{flex-direction:column;align-items:stretch}
+  .cta-row .btn{width:100%}
+}
+
+/* never allow sideways scroll on narrow screens */
+@media(max-width:768px){
+  .table-wrap{overflow-x:auto}
+}

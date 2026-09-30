@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AdaptLearn: learn from NPTEL lectures, guided by what you know</title>
+<meta name="description" content="AdaptLearn turns free NPTEL courses into a learning path that adapts to your quiz results and watch time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --bg:#F1F7F8; --surface:#FFFFFF; --surface-2:#E4EFF1; --ink:#10283A; --muted:#48606F; --line:#CADDE2;
+  --primary:#0F6F7C; --on-primary:#FFFFFF; --primary-soft:#D3EEF1; --primary-text:#0B5C67;
+  --sun:#FFC53D; --on-sun:#10283A; --sun-soft:#FFF0C7; --sun-text:#6B4A00;
+  --coral:#F0705F; --coral-soft:#FFE0DB; --coral-text:#A73222;
+  --mint:#4FC79A; --mint-soft:#D5F4E7; --mint-text:#136B45;
+  --shadow:0 16px 32px -20px rgba(16,40,58,.5),0 2px 6px -2px rgba(16,40,58,.12);
+  --edge:rgba(6,32,42,.3);
+  --board:#0E3B47;
+  --font-display:'Nunito','Trebuchet MS',ui-rounded,system-ui,sans-serif;
+  --font-body:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0B1A24; --surface:#122736; --surface-2:#19364A; --ink:#E9F4F6; --muted:#A3BBC6; --line:#25475A;
+    --primary:#53C7D6; --on-primary:#062029; --primary-soft:#164556; --primary-text:#7FDCE8;
+    --sun-soft:#3B3216; --sun-text:#FFD36E;
+    --coral:#FF8A79; --coral-soft:#4A2622; --coral-text:#FFA093;
+    --mint:#5BD6A5; --mint-soft:#15402F; --mint-text:#7BE3B7;
+    --shadow:0 16px 32px -20px rgba(0,0,0,.8),0 2px 6px -2px rgba(0,0,0,.4);
+    --edge:rgba(0,0,0,.45); --board:#0A2E38;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0B1A24; --surface:#122736; --surface-2:#19364A; --ink:#E9F4F6; --muted:#A3BBC6; --line:#25475A;
+  --primary:#53C7D6; --on-primary:#062029; --primary-soft:#164556; --primary-text:#7FDCE8;
+  --sun-soft:#3B3216; --sun-text:#FFD36E;
+  --coral:#FF8A79; --coral-soft:#4A2622; --coral-text:#FFA093;
+  --mint:#5BD6A5; --mint-soft:#15402F; --mint-text:#7BE3B7;
+  --shadow:0 16px 32px -20px rgba(0,0,0,.8),0 2px 6px -2px rgba(0,0,0,.4);
+  --edge:rgba(0,0,0,.45); --board:#0A2E38;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 76px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:800;line-height:1.12;letter-spacing:-.01em;margin:0 0 .5em}
+h1{font-size:clamp(2.2rem,5.4vw,3.9rem);font-weight:900}
+h2{font-size:clamp(1.55rem,3vw,2.1rem)}
+h3{font-size:1.15rem}
+p{margin:0 0 1rem}
+a{color:var(--primary-text)}
+img,svg{max-width:100%}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--primary);outline-offset:3px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.container{width:min(1180px,100% - 2rem);margin-inline:auto}
+.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
+#main:focus{outline:none}
+.skip{position:absolute;left:1rem;top:-4rem;background:var(--ink);color:var(--bg);padding:.6rem 1rem;border-radius:10px;z-index:100;text-decoration:none;transition:top .15s}
+.skip:focus{top:calc(env(safe-area-inset-top,0px) + .5rem)}
+
+/* header */
+.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:.75rem;min-height:64px}
+.brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--ink);font-family:var(--font-display);font-weight:900;font-size:1.3rem}
+.brand-mark{display:grid;place-items:center;width:38px;height:38px}
+.nav{display:flex;gap:.25rem;margin-left:1rem}
+.nav a,.nav button.navlink{display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:0 .9rem;border-radius:12px;text-decoration:none;color:var(--muted);font-weight:700;background:none;border:0}
+.nav a:hover,.nav button.navlink:hover{background:var(--surface-2);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--primary-soft);color:var(--primary-text)}
+.tools{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.menu-btn{display:none}
+.only-sm{display:none}
+.icon-btn{position:relative;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:none;border:1px solid transparent;color:var(--ink);transition:background .15s}
+.icon-btn:hover{background:var(--surface-2)}
+.icon-btn .ic{width:1.3em;height:1.3em}
+.dot{position:absolute;top:2px;right:2px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--coral);color:#10283A;font-size:.72rem;font-weight:800;display:grid;place-items:center;border:2px solid var(--bg)}
+.dot[hidden]{display:none}
+.avatar{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--sun);color:var(--on-sun);font-weight:800;font-family:var(--font-display)}
+.bell-panel{position:fixed;top:calc(env(safe-area-inset-top,0px) + 66px);right:.75rem;width:min(360px,calc(100vw - 1.5rem));max-height:70vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:1rem;z-index:60}
+.bell-panel[hidden]{display:none}
+.bell-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.bell-panel ul{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+.bell-panel li{padding:.65rem .75rem;border-radius:12px;background:var(--surface-2);font-size:.92rem}
+.bell-panel li.unread{background:var(--primary-soft);color:var(--primary-text)}
+.bell-panel li small{display:block;color:var(--muted);font-size:.78rem}
+.bell-panel li.unread small{color:var(--primary-text)}
+.live{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:700;color:var(--mint-text);background:var(--mint-soft);padding:.15rem .6rem;border-radius:99px}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--mint-text);animation:pulse 1.8s infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.25rem;border-radius:14px;border:0;font-weight:700;text-decoration:none;transition:transform .12s,box-shadow .12s,background .15s;cursor:pointer}
+.btn.primary{background:var(--primary);color:var(--on-primary);box-shadow:0 4px 0 var(--edge)}
+.btn.sun{background:var(--sun);color:var(--on-sun);box-shadow:0 4px 0 var(--edge)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.small{min-height:40px;padding:0 1rem;font-size:.92rem}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--edge)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.link{background:none;border:0;color:var(--primary-text);font-weight:700;text-decoration:underline;padding:.4rem 0;min-height:44px}
+
+/* layout blocks */
+#view{overflow-x:clip;min-height:70vh;padding-bottom:3rem}
+.section{padding:3rem 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:1.25rem;box-shadow:var(--shadow);min-width:0}
+.muted{color:var(--muted)}
+.lede{font-size:1.15rem;max-width:34rem;color:var(--muted)}
+.fine{font-size:.85rem;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.between{justify-content:space-between}
+.page-head{padding:2rem 0 1rem}
+.page-head p{color:var(--muted);margin:0}
+
+/* hero */
+.hero{display:grid;gap:2rem;grid-template-columns:minmax(0,1fr);padding:2.25rem 0 1rem;align-items:center}
+@media(min-width:960px){.hero{grid-template-columns:minmax(0,5fr) minmax(0,7fr);padding:3.25rem 0 1.5rem;gap:2.5rem}}
+.hero h1 span{display:block}
+.hero h1 span:nth-child(1){animation:rise .7s cubic-bezier(.2,.8,.2,1) both .05s}
+.hero h1 span:nth-child(2){animation:rise .7s cubic-bezier(.2,.8,.2,1) both .18s}
+.hero .lede,.hero .cta-row,.hero .fine{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .3s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.cta-row{display:flex;flex-wrap:wrap;gap:.9rem;margin:1.6rem 0 1rem}
+.stage{position:relative;height:clamp(320px,56vw,560px);border-radius:32px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow)}
+.stage.sm{height:clamp(300px,42vw,420px)}
+.stage canvas.gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.stage svg.fallback{position:absolute;inset:0;width:100%;height:100%}
+.gl-tip{position:absolute;z-index:2;pointer-events:none;background:var(--ink);color:var(--bg);padding:.5rem .75rem;border-radius:12px;font-size:.85rem;line-height:1.35;max-width:220px;transform:translate(-50%,-100%);box-shadow:var(--shadow)}
+.gl-tip[hidden]{display:none}
+.gl-tip strong{display:block}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin:.9rem 0 0;padding:0;list-style:none;font-size:.9rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.4rem}
+.hint-line{font-size:.85rem;color:var(--muted);margin:.4rem 0 0}
+
+/* steps */
+.steps{display:grid;gap:1.75rem;counter-reset:s;padding:0;margin:1.5rem 0 0;list-style:none}
+@media(min-width:800px){.steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.steps li{position:relative;padding-top:3.6rem;counter-increment:s}
+.steps li::before{content:counter(s);position:absolute;top:0;left:0;width:46px;height:46px;border-radius:50%;background:var(--sun);color:var(--on-sun);font:900 1.3rem var(--font-display);display:grid;place-items:center;box-shadow:0 4px 0 var(--edge)}
+@media(min-width:800px){.steps li:not(:last-child)::after{content:"";position:absolute;top:22px;left:64px;right:-1rem;border-top:3px dotted var(--line)}}
+.steps h3{margin-bottom:.3rem}
+.steps p{color:var(--muted);margin:0}
+.inside{display:grid;gap:2rem;grid-template-columns:minmax(0,1fr);align-items:start}
+@media(min-width:900px){.inside{grid-template-columns:minmax(0,6fr) minmax(0,5fr)}}
+.feature-list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1.25rem}
+.feature-list li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:.9rem}
+.feature-list .fi{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary-text)}
+.feature-list li:nth-child(2) .fi{background:var(--sun-soft);color:var(--sun-text)}
+.feature-list li:nth-child(3) .fi{background:var(--mint-soft);color:var(--mint-text)}
+.feature-list li:nth-child(4) .fi{background:var(--coral-soft);color:var(--coral-text)}
+.feature-list h3{margin:0 0 .15rem}
+.feature-list p{margin:0;color:var(--muted)}
+.cta-band{display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:center;justify-content:space-between;background:var(--primary);color:var(--on-primary);border-radius:32px;padding:2rem}
+.cta-band h2{margin:0}
+.cta-band p{margin:.25rem 0 0;opacity:.92}
+.cta-band .btn.sun{flex:none}
+
+/* forms */
+.auth{display:grid;place-items:start center;padding:2.5rem 0}
+.auth .card{width:min(460px,100%);padding:1.75rem;border-radius:28px}
+.auth-top{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
+.field{margin-bottom:1rem}
+.field label{display:block;font-weight:700;margin-bottom:.35rem}
+.field input,.field select{width:100%;min-height:46px;padding:.55rem .85rem;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
+.field.invalid input,.field.invalid select{border-color:var(--coral)}
+.field.valid input,.field.valid select{border-color:var(--mint)}
+.hint{font-size:.85rem;color:var(--muted);margin:.3rem 0 0}
+.msg{display:flex;gap:.4rem;align-items:flex-start;font-size:.88rem;margin:.3rem 0 0;min-height:0}
+.msg:empty{display:none}
+.field.invalid .msg{color:var(--coral-text);font-weight:700}
+.field.valid .msg{color:var(--mint-text)}
+.pw{position:relative}
+.pw input{padding-right:5rem}
+.pw .reveal{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:38px;padding:0 .7rem;border-radius:9px;border:0;background:var(--surface-2);font-weight:700;font-size:.85rem}
+.form-note{font-size:.88rem;color:var(--muted);background:var(--surface-2);padding:.7rem .9rem;border-radius:12px;margin:1rem 0 0}
+
+/* progress + badges */
+.bar-track{height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar-track>i{display:block;height:100%;width:100%;border-radius:inherit;background:var(--primary);transform:scaleX(var(--v,0));transform-origin:left;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.bar-track.mint>i{background:var(--mint)}
+.bar-track.coral>i{background:var(--coral)}
+.bar-track.sun>i{background:var(--sun)}
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.12rem .65rem;border-radius:99px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.b-revisit{background:var(--coral-soft);color:var(--coral-text)}
+.b-practise{background:var(--sun-soft);color:var(--sun-text)}
+.b-advance{background:var(--primary-soft);color:var(--primary-text)}
+.b-done,.b-strong{background:var(--mint-soft);color:var(--mint-text)}
+.b-later{background:var(--surface-2);color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:.35rem;min-height:36px;padding:0 .8rem;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;font-size:.88rem}
+button.chip:hover{background:var(--surface-2)}
+.chip[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.chip.cite{background:var(--primary-soft);border-color:transparent;color:var(--primary-text);min-height:32px;font-size:.8rem}
+
+/* dashboard */
+.dash{display:grid;gap:1.25rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:980px){.dash{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}}
+.stack{display:grid;gap:1.25rem;align-content:start;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:0}
+@media(min-width:700px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:.9rem 1rem}
+.stat dt{color:var(--muted);font-size:.85rem;order:2}
+.stat dd{margin:0;font:900 1.9rem/1.1 var(--font-display)}
+.stat{display:flex;flex-direction:column}
+.resume{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.1rem;align-items:center}
+.resume h2{margin:0 0 .2rem;font-size:1.4rem}
+.ring text{font:800 1.1rem var(--font-display);fill:var(--ink)}
+.course-line{display:grid;gap:.35rem;padding:.9rem 0;border-top:1px solid var(--line)}
+.course-line:first-of-type{border-top:0}
+.plan-mini{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+.plan-mini li{display:grid;gap:.25rem;padding:.75rem .9rem;background:var(--surface-2);border-radius:14px}
+.xp{display:flex;align-items:center;gap:.9rem}
+.flame{width:46px;height:46px;border-radius:14px;background:var(--sun-soft);color:var(--sun-text);display:grid;place-items:center}
+
+/* courses */
+.filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:1rem 0 1.5rem}
+.search{position:relative;flex:1 1 260px;max-width:420px}
+.search input{width:100%;min-height:46px;padding:.5rem .9rem .5rem 2.6rem;border-radius:14px;border:1.5px solid var(--line);background:var(--surface)}
+.search .ic{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.grid{display:grid;gap:1.25rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))}
+.course{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow);transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.course .cover{height:112px;display:grid;place-items:center;background:var(--c,var(--primary-soft));color:var(--t,var(--primary-text))}
+.course .cover .ic{width:2.6rem;height:2.6rem}
+.course .body{padding:1rem 1.15rem 1.2rem;display:flex;flex-direction:column;gap:.5rem;flex:1}
+.course h3{margin:0}
+.course .meta{display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-size:.85rem;color:var(--muted)}
+.course .meta span{display:inline-flex;align-items:center;gap:.3rem}
+.course .push{margin-top:auto;padding-top:.6rem}
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty svg{margin:0 auto .5rem;display:block}
+
+/* lesson */
+.lesson{display:grid;gap:1.25rem;grid-template-columns:minmax(0,1fr);padding-top:1.5rem}
+@media(min-width:1040px){.lesson{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}}
+.player{border-radius:26px;overflow:hidden;background:var(--board);color:#fff;box-shadow:var(--shadow)}
+.screen{aspect-ratio:16/9;display:block;width:100%;background:var(--board)}
+.screen svg{display:block;width:100%;height:100%}
+.controls{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:rgba(0,0,0,.28)}
+.controls .time{font-variant-numeric:tabular-nums;font-size:.85rem;min-width:3.2ch}
+.controls input[type=range]{flex:1;min-width:0;accent-color:#FFC53D;height:44px;margin:0}
+.round{width:44px;height:44px;border-radius:50%;border:0;background:var(--sun);color:#10283A;display:grid;place-items:center;box-shadow:0 3px 0 rgba(0,0,0,.35);transition:transform .12s}
+.round:active{transform:translateY(2px)}
+.speed{min-width:52px;min-height:40px;border-radius:10px;border:1.5px solid rgba(255,255,255,.4);background:none;color:#fff;font-weight:700}
+.save-note{font-size:.85rem;color:var(--muted);margin:.6rem .2rem 0;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.topics{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0 0}
+.tabs{display:flex;gap:.3rem;background:var(--surface-2);padding:.3rem;border-radius:16px;margin-bottom:1rem}
+.tabs button{flex:1;min-height:42px;border-radius:12px;border:0;background:none;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px -2px rgba(16,40,58,.3)}
+.log{display:flex;flex-direction:column;gap:.7rem;height:340px;overflow:auto;padding:.25rem .1rem;scroll-behavior:smooth}
+.bubble{max-width:92%;padding:.65rem .9rem;border-radius:18px;font-size:.95rem;overflow-wrap:anywhere}
+.bubble.bot{background:var(--surface-2);border-bottom-left-radius:6px;align-self:flex-start}
+.bubble.me{background:var(--primary);color:var(--on-primary);border-bottom-right-radius:6px;align-self:flex-end}
+.bubble.peer{background:var(--mint-soft);color:var(--ink);border-bottom-left-radius:6px;align-self:flex-start}
+.bubble .who{display:block;font-size:.75rem;font-weight:700;color:var(--mint-text);margin-bottom:.1rem}
+.bubble .cites{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.typing{display:inline-flex;gap:4px;align-items:center;height:1.2em}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{40%{transform:translateY(-5px)}}
+.suggest{display:flex;flex-wrap:wrap;gap:.4rem;margin:.75rem 0}
+.composer{display:flex;gap:.5rem}
+.composer input{flex:1;min-width:0;min-height:46px;padding:.5rem .85rem;border-radius:14px;border:1.5px solid var(--line);background:var(--bg)}
+.composer input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
+.ask-at{font-size:.82rem;color:var(--muted);margin:.4rem 0 0}
+.lesson-list{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+.lesson-list a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:.6rem;align-items:center;padding:.6rem .7rem;border-radius:12px;text-decoration:none;color:var(--ink)}
+.lesson-list a:hover{background:var(--surface-2)}
+.lesson-list a[aria-current="page"]{background:var(--primary-soft)}
+.lesson-list small{color:var(--muted)}
+.flip{perspective:1100px}
+.flip-inner{display:grid;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.8,.2,1)}
+.flip.flipped .flip-inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:1.25rem;box-shadow:var(--shadow)}
+.face.back{transform:rotateY(180deg)}
+.opts{display:grid;gap:.5rem;margin:.9rem 0}
+.opt{display:flex;gap:.7rem;align-items:center;min-height:46px;padding:.4rem .9rem;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);cursor:pointer;font-weight:500}
+.opt:has(input:checked){border-color:var(--primary);background:var(--primary-soft);color:var(--primary-text)}
+.opt:has(input:focus-visible){outline:3px solid var(--primary);outline-offset:2px}
+.opt input{accent-color:var(--primary);width:18px;height:18px}
+.verdict{display:flex;align-items:center;gap:.5rem;font:800 1.2rem var(--font-display)}
+.verdict.ok{color:var(--mint-text)}.verdict.no{color:var(--coral-text)}
+
+/* plan */
+.plan-grid{display:grid;gap:1.25rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:980px){.plan-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.plan-list{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+.plan-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.2rem .9rem;padding:.9rem 1rem;border-radius:18px;background:var(--surface);border:1.5px solid var(--line);text-align:left;width:100%;transition:border-color .15s,background .15s}
+button.plan-item:hover{background:var(--surface-2)}
+.plan-item.hl{border-color:var(--primary);background:var(--primary-soft)}
+.plan-item.later{opacity:.75;border-style:dashed}
+.plan-item .shape{grid-row:1/3;align-self:center}
+.plan-item strong{display:flex;flex-wrap:wrap;gap:.4rem .6rem;align-items:center}
+.plan-item p{margin:0;color:var(--muted);font-size:.92rem}
+.slider{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center}
+.slider input{flex:1 1 200px;accent-color:var(--primary);height:44px;margin:0}
+.mastery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem .8rem;margin-bottom:.9rem}
+.mastery-row .bar-track{grid-column:1/-1}
+.mastery-row span:last-child{font-weight:700;font-variant-numeric:tabular-nums}
+
+/* tables + admin */
+.table-wrap{overflow-x:auto;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{text-align:left;padding:.75rem 1rem;border-bottom:1px solid var(--line)}
+th{font-size:.85rem;color:var(--muted);font-weight:700}
+tr:last-child td{border-bottom:0}
+.admin-grid{display:grid;gap:1.25rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:980px){.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.import-steps{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.5rem}
+.import-steps li{display:flex;gap:.6rem;align-items:center;color:var(--muted)}
+.import-steps li.done{color:var(--mint-text)}
+.import-steps li.run{color:var(--ink);font-weight:700}
+.import-steps .ic{width:1.2em;height:1.2em}
+.chart text{fill:var(--muted);font:600 11px var(--font-body)}
+.chart .val{fill:var(--ink);font-weight:800}
+.chart rect{fill:var(--primary)}
+
+/* footer + toast */
+.foot{border-top:1px solid var(--line);padding:1.5rem 0 2rem;color:var(--muted);font-size:.9rem}
+.toasts{position:fixed;left:0;right:0;bottom:0;padding:0 1rem calc(1rem + env(safe-area-inset-bottom,0px));display:grid;gap:.5rem;justify-items:center;pointer-events:none;z-index:80}
+.toast{pointer-events:auto;display:flex;gap:.6rem;align-items:center;background:var(--ink);color:var(--bg);padding:.75rem 1rem;border-radius:14px;box-shadow:var(--shadow);max-width:min(440px,100%);animation:pop .3s cubic-bezier(.2,.8,.2,1)}
+.toast .ic{color:var(--sun);flex:none}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+
+@media(max-width:820px){
+  .menu-btn{display:inline-grid}
+  .nav{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);left:.75rem;right:.75rem;margin:0;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:.6rem;box-shadow:var(--shadow);display:none;z-index:70}
+  .nav.open{display:flex}
+  .only-sm{display:flex;flex-direction:column;gap:.25rem;border-top:1px solid var(--line);margin-top:.4rem;padding-top:.4rem}
+  .hide-sm{display:none!important}
+  .resume{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:420px){#tEnd{display:none}}
+@media(max-width:359px){.brand-text{display:none}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" id="skip">Skip to content</a>
+<header class="site">
+  <div class="container bar">
+    <a class="brand" href="#/" aria-label="AdaptLearn home"><span class="brand-mark" id="brandMark"></span><span class="brand-text">AdaptLearn</span></a>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <div class="tools" id="tools"></div>
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"></button>
+  </div>
+</header>
+<main id="main" tabindex="-1"><div id="view"></div></main>
+<footer class="foot">
+  <div class="container">
+    <p style="margin:0 0 .3rem">AdaptLearn is a prototype and every name, score and course shown here is sample data.</p>
+    <p style="margin:0">Lecture videos will be embedded from the official NPTEL YouTube channel. AdaptLearn is not affiliated with NPTEL.</p>
+  </div>
+</footer>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<noscript><p style="padding:1rem">AdaptLearn needs JavaScript to run.</p></noscript>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ---------- utilities ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const fmt=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const pct=v=>Math.round(v*100);
+const store={
+  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+const mqReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+let reduce=mqReduce.matches;
+let sceneApi=null;
+mqReduce.addEventListener('change',e=>{reduce=e.matches;if(sceneApi)sceneApi.onMotionChange()});
+
+const ICONS={
+  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M8 17v-6"/><path d="M13 17V6"/><path d="M18 17v-9"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  play:'<path d="M6 4l14 8-14 8z" fill="currentColor"/>',
+  pause:'<rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/>',
+  send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+  sparkles:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  message:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  cap:'<path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>',
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  brain:'<circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><circle cx="12" cy="15" r="4"/>',
+  code:'<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+  globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>',
+  cpu:'<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/>'
+};
+const ic=(n,cls='')=>`<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+
+const mascotSVG=(size=40)=>`<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true">
+<ellipse cx="32" cy="59" rx="15" ry="3" fill="#10283A" opacity=".16"/>
+<ellipse cx="32" cy="38" rx="20" ry="20" fill="#FFC53D"/>
+<ellipse cx="32" cy="45" rx="11.5" ry="10" fill="#FFE9A8"/>
+<ellipse cx="12.5" cy="40" rx="4" ry="8" fill="#F2B02A" transform="rotate(12 12.5 40)"/>
+<ellipse cx="51.5" cy="40" rx="4" ry="8" fill="#F2B02A" transform="rotate(-12 51.5 40)"/>
+<circle cx="24.5" cy="34" r="6.6" fill="#fff"/><circle cx="39.5" cy="34" r="6.6" fill="#fff"/>
+<circle cx="25.5" cy="35" r="3.2" fill="#10283A"/><circle cx="38.5" cy="35" r="3.2" fill="#10283A"/>
+<circle cx="26.6" cy="33.8" r="1" fill="#fff"/><circle cx="39.6" cy="33.8" r="1" fill="#fff"/>
+<path d="M29.4 40.5h5.2L32 45.5z" fill="#F0705F"/>
+<path d="M21 23v5c0 2.6 5 4 11 4s11-1.4 11-4v-5z" fill="#0B5C67"/>
+<path d="M9 21.5 32 12l23 9.5L32 31z" fill="#0F6F7C"/>
+<path d="M55 21.5v8" stroke="#FFC53D" stroke-width="2" stroke-linecap="round"/><circle cx="55" cy="31" r="2.4" fill="#FFC53D"/>
+</svg>`;
+
+/* ---------- sample data ---------- */
+const COURSES=[
+  {id:'dbms',title:'Database Management Systems',cat:'Core CS',weeks:12,modules:6,icon:'db',c:'--primary-soft',t:'--primary-text',blurb:'Relational model, SQL, normalization, indexing and transactions.'},
+  {id:'ml',title:'Introduction to Machine Learning',cat:'AI and ML',weeks:12,modules:8,icon:'brain',c:'--sun-soft',t:'--sun-text',blurb:'Regression, classification, trees, kernels and evaluation.'},
+  {id:'py',title:'Programming and Data Structures in Python',cat:'Programming',weeks:12,modules:7,icon:'code',c:'--mint-soft',t:'--mint-text',blurb:'Python fundamentals, recursion, lists, trees and graphs.'},
+  {id:'ds',title:'Data Science for Engineers',cat:'Data',weeks:8,modules:5,icon:'chart',c:'--coral-soft',t:'--coral-text',blurb:'Statistics, visualization and modelling with real datasets.'},
+  {id:'web',title:'Web Technologies',cat:'Web',weeks:8,modules:6,icon:'globe',c:'--primary-soft',t:'--primary-text',blurb:'HTML, CSS, JavaScript, HTTP and building small web apps.'},
+  {id:'os',title:'Operating Systems',cat:'Core CS',weeks:12,modules:7,icon:'cpu',c:'--sun-soft',t:'--sun-text',blurb:'Processes, scheduling, memory, file systems and concurrency.'}
+];
+const CATS=['All',...Array.from(new Set(COURSES.map(c=>c.cat)))];
+const LESSONS=[
+  {id:'dbms-1',n:1,title:'Introduction and the ER model',dur:870,topic:'ER model',pts:['Entities, attributes, relationships','Keys and cardinality','From ER diagram to tables']},
+  {id:'dbms-2',n:2,title:'Relational algebra',dur:1030,topic:'Relational algebra',pts:['Select, project, rename','Union, difference, product','Composing queries']},
+  {id:'dbms-3',n:3,title:'SQL and joins',dur:1185,topic:'Joins',pts:['SELECT, WHERE, GROUP BY','Inner and outer joins','Subqueries']},
+  {id:'dbms-4',n:4,title:'Normalization',dur:1080,topic:'Normalization',pts:['Functional dependencies','1NF, 2NF and 3NF','Update, insert, delete anomalies'],seg:[570,910]},
+  {id:'dbms-5',n:5,title:'Indexing and B+ trees',dur:980,topic:'Indexing',pts:['Why indexes speed up reads','B+ tree structure','Range queries on leaves'],seg:[240,600]},
+  {id:'dbms-6',n:6,title:'Transactions and ACID',dur:1205,topic:'Transactions',pts:['Atomicity and durability','Isolation levels','Schedules and serializability']}
+];
+const S={
+  user:null,
+  enrolled:{dbms:{progress:.62,last:'dbms-5'},ml:{progress:.35,last:'ml-3'},py:{progress:1,last:'py-7'}},
+  mastery:{'ER model':.88,'Relational algebra':.74,'Joins':.82,'Normalization':.42,'Indexing':.55,'Transactions':.35},
+  watched:{'dbms-1':1,'dbms-2':1,'dbms-3':.97,'dbms-4':.92,'dbms-5':.6,'dbms-6':0},
+  quizTries:0,
+  notifs:[
+    {id:1,type:'plan',text:'Your study plan for this week is ready.',ago:'2 h ago',read:false},
+    {id:2,type:'reminder',text:'Quiz reminder: Normalization is due Friday.',ago:'Yesterday',read:false},
+    {id:3,type:'course',text:'New course added: Operating Systems.',ago:'2 days ago',read:true}
+  ],
+  hours:3,xp:1240,streak:6
+};
+const AT_RISK=[
+  {name:'Ravi K.',course:'Database Management Systems',m:.31,last:'9 days ago'},
+  {name:'Sneha P.',course:'Introduction to Machine Learning',m:.38,last:'6 days ago'},
+  {name:'Imran S.',course:'Programming and Data Structures in Python',m:.44,last:'8 days ago'},
+  {name:'Divya M.',course:'Database Management Systems',m:.47,last:'5 days ago'}
+];
+const HOME_NODES=[
+  {title:'ER model',state:'done',detail:'Mastery 88%'},
+  {title:'Relational algebra',state:'practise',detail:'Mastery 74%. Practise 10 questions'},
+  {title:'SQL and joins',state:'done',detail:'Mastery 82%'},
+  {title:'Normalization',state:'revisit',detail:'Mastery 42%. Rewatch 9:30 to 15:10'},
+  {title:'Indexing and B+ trees',state:'revisit',detail:'Mastery 55%. Rewatch 4:00 to 10:00'},
+  {title:'Transactions',state:'current',detail:'Next lecture, about 20 min'},
+  {title:'Query optimisation',state:'upcoming',detail:'Unlocks after Transactions'},
+  {title:'Concurrency control',state:'upcoming',detail:'Unlocks after Transactions'}
+];
+const STATE_LABEL={done:'Completed',revisit:'Revisit',practise:'Practise',current:'Next up',upcoming:'Later'};
+
+try{const u=store.get('al_user');if(u)S.user=JSON.parse(u)}catch(e){}
+
+/* ---------- planner (deterministic, as in the project plan) ---------- */
+const band=m=>{const p=pct(m);return p<60?0:p<80?1:2};
+const masteryLabel=m=>[['Weak','b-revisit'],['Close','b-practise'],['Strong','b-strong']][band(m)];
+function buildPlan(){
+  const items=[];
+  LESSONS.forEach(l=>{
+    const m=S.mastery[l.topic],w=S.watched[l.id]||0;
+    if(w===0){
+      items.push({action:'advance',order:3,title:`Lecture ${l.n}: ${l.title}`,course:'Database Management Systems',minutes:Math.round(l.dur/60)+40,lesson:l.id,
+        reason:`Ready for the next lecture. Watch it, then take the quiz to set your ${l.topic} mastery.`});
+    }else if(band(m)===0){
+      const r=l.seg?`${fmt(l.seg[0])} to ${fmt(l.seg[1])}`:'the key section';
+      items.push({action:'revisit',order:1,m,title:`${l.topic} (Lecture ${l.n})`,course:'Database Management Systems',minutes:45,lesson:l.id,
+        reason:`You scored ${pct(m)}% on ${l.topic}. Rewatch ${r} of Lecture ${l.n}, then retake the quiz.`});
+    }else if(band(m)===1){
+      items.push({action:'practise',order:2,m,title:`${l.topic} practice`,course:'Database Management Systems',minutes:30,lesson:l.id,
+        reason:`${l.topic} is close at ${pct(m)}%. Answer 10 practice questions to lock it in.`});
+    }
+  });
+  items.push({action:'advance',order:3,title:'Lecture 4: Linear regression',course:'Introduction to Machine Learning',minutes:60,lesson:null,
+    reason:'You are on track in this course. Keep the momentum with the next lecture.'});
+  items.sort((a,b)=>a.order-b.order||(a.m||1)-(b.m||1));
+  const budget=S.hours*60;let used=0;
+  items.forEach(it=>{if(used+it.minutes<=budget){it.fit=true;used+=it.minutes}else it.fit=false});
+  return{items,fit:items.filter(i=>i.fit),later:items.filter(i=>!i.fit),used,budget};
+}
+const ACTION_LABEL={revisit:'Revisit',practise:'Practise',advance:'Advance'};
+const ACTION_STATE={revisit:'revisit',practise:'practise',advance:'current'};
+
+/* ---------- toasts + notifications ---------- */
+function toast(text,icon='sparkles'){
+  const el=document.createElement('div');el.className='toast';el.innerHTML=`${ic(icon)}<span>${esc(text)}</span>`;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>el.remove(),320)},4200);
+}
+let nid=100;
+function notify(text,type='info'){S.notifs.unshift({id:nid++,type,text,ago:'Just now',read:false});updateBell()}
+const LIVE_MSGS=['Meera posted a question in DBMS Section A.','Reminder: 10 practice questions are waiting in your plan.','New note added to Lecture 5: B+ tree examples.','You are on a 6 day streak. Keep it going.'];
+let liveTimer=0,liveIdx=0;
+function startLive(){
+  stopLive();
+  liveTimer=setInterval(()=>{if(document.hidden||!S.user||S.user.role==='admin')return;const m=LIVE_MSGS[liveIdx++%LIVE_MSGS.length];notify(m,'live');toast(m,'bell')},32000);
+}
+function stopLive(){clearInterval(liveTimer)}
+
+/* ---------- header / nav ---------- */
+function isDark(){const t=document.documentElement.dataset.theme;return t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches}
+function currentPath(){return((location.hash||'#/').slice(1)||'/')}
+function renderNav(){
+  const p=currentPath();
+  const links=!S.user?[['/','Home','home'],['/courses','Courses','book']]:S.user.role==='admin'?[['/admin','Admin','chart'],['/courses','Courses','book']]:[['/dashboard','Dashboard','home'],['/courses','Courses','book'],['/plan','My plan','target']];
+  const cur=l=>(l===p||(l!=='/'&&p.indexOf(l)===0))?' aria-current="page"':'';
+  const authSm=S.user?`<button class="navlink" data-act="logout">${ic('logout')}Log out</button>`:`<a href="#/login">Log in</a><a href="#/register">Register</a>`;
+  $('#nav').innerHTML=links.map(l=>`<a href="#${l[0]}"${cur(l[0])}>${ic(l[2])}${l[1]}</a>`).join('')+`<div class="only-sm">${authSm}</div>`;
+  const unread=S.notifs.filter(n=>!n.read).length;
+  const bell=S.user&&S.user.role!=='admin'?`<div><button class="icon-btn" id="bellBtn" aria-label="Notifications, ${unread} unread" aria-expanded="false" aria-controls="bellPanel">${ic('bell')}<span class="dot" ${unread?'':'hidden'}>${unread}</span></button>
+    <div class="bell-panel" id="bellPanel" hidden><div class="bell-head"><strong>Notifications</strong><span class="live"><i></i>Live</span></div><ul id="bellList"></ul><button class="link" id="markRead">Mark all as read</button></div></div>`:'';
+  const auth=S.user?`<span class="avatar hide-sm" title="${esc(S.user.name)}" aria-label="Signed in as ${esc(S.user.name)}">${esc(S.user.name.trim()[0].toUpperCase())}</span><button class="btn ghost small hide-sm" data-act="logout">${ic('logout')}Log out</button>`
+    :`<a class="btn ghost small hide-sm" href="#/login">Log in</a><a class="btn primary small hide-sm" href="#/register">Register</a>`;
+  $('#tools').innerHTML=`<button class="icon-btn" id="themeBtn" aria-label="Switch to ${isDark()?'light':'dark'} theme">${ic(isDark()?'sun':'moon')}</button>${bell}${auth}`;
+  $('#menuBtn').innerHTML=ic($('#nav').classList.contains('open')?'x':'menu');
+  updateBell();
+}
+function updateBell(){
+  const btn=$('#bellBtn');if(!btn)return;
+  const unread=S.notifs.filter(n=>!n.read).length;
+  btn.setAttribute('aria-label',`Notifications, ${unread} unread`);
+  const d=$('.dot',btn);d.textContent=unread;d.hidden=!unread;
+  $('#bellList').innerHTML=S.notifs.slice(0,8).map(n=>`<li class="${n.read?'':'unread'}">${esc(n.text)}<small>${esc(n.ago)}</small></li>`).join('');
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,a');
+  const panel=$('#bellPanel');
+  if(panel&&!panel.hidden&&!e.target.closest('#bellPanel')&&!e.target.closest('#bellBtn')){panel.hidden=true;$('#bellBtn').setAttribute('aria-expanded','false')}
+  if(!t)return;
+  if(t.id==='themeBtn'){const next=isDark()?'light':'dark';document.documentElement.dataset.theme=next;store.set('al_theme',next);renderNav();return}
+  if(t.id==='bellBtn'){const open=panel.hidden;panel.hidden=!open;t.setAttribute('aria-expanded',String(open));if(open)updateBell();return}
+  if(t.id==='markRead'){S.notifs.forEach(n=>n.read=true);updateBell();return}
+  if(t.dataset.act==='logout'){logout();return}
+  if(t.id==='menuBtn'){const nav=$('#nav');const open=nav.classList.toggle('open');t.setAttribute('aria-expanded',String(open));t.setAttribute('aria-label',open?'Close menu':'Open menu');t.innerHTML=ic(open?'x':'menu');return}
+  if(t.closest('#nav')&&t.tagName==='A'){closeMenu()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){const panel=$('#bellPanel');if(panel&&!panel.hidden){panel.hidden=true;$('#bellBtn').setAttribute('aria-expanded','false');$('#bellBtn').focus()}closeMenu()}
+});
+function closeMenu(){const nav=$('#nav'),b=$('#menuBtn');if(!nav.classList.contains('open'))return;nav.classList.remove('open');b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Open menu');b.innerHTML=ic('menu')}
+$('#skip').addEventListener('click',e=>{e.preventDefault();$('#main').focus()});
+function login(user){S.user=user;store.set('al_user',JSON.stringify(user));if(user.role!=='admin')startLive();renderNav()}
+function logout(){S.user=null;store.del('al_user');stopLive();closeMenu();renderNav();toast('You are logged out.','logout');location.hash='#/'}
+
+/* ---------- 3D learning path ---------- */
+function shapeSVG(state,size=16){
+  const c={done:'var(--mint)',revisit:'var(--coral)',practise:'var(--sun)',current:'var(--primary)',upcoming:'var(--line)'}[state];
+  const s={done:'<circle cx="8" cy="8" r="6"/>',revisit:'<path d="M8 1.5 14.5 8 8 14.5 1.5 8z"/>',practise:'<rect x="2.5" y="2.5" width="11" height="11" rx="2"/>',current:'<circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="2.4"/>',upcoming:'<circle cx="8" cy="8" r="3.5"/>'}[state];
+  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="${c}" style="color:${c}" aria-hidden="true">${s}</svg>`;
+}
+const legendHTML=()=>`<ul class="legend" aria-label="What the shapes mean">${['done','revisit','practise','current','upcoming'].map(s=>`<li>${shapeSVG(s)}${STATE_LABEL[s]}</li>`).join('')}</ul>`;
+
+function createScene(){
+  if(!window.THREE)return null;
+  const T=THREE;let renderer;
+  try{renderer=new T.WebGLRenderer({antialias:true,alpha:true})}catch(e){return null}
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  const canvas=renderer.domElement;canvas.className='gl';canvas.setAttribute('aria-hidden','true');
+  const scene=new T.Scene(),camera=new T.PerspectiveCamera(38,1,.1,100);
+  scene.add(new T.HemisphereLight(0xffffff,0x7a97a6,.95));
+  const key=new T.DirectionalLight(0xffffff,.85);key.position.set(4,8,7);scene.add(key);
+  const fill=new T.DirectionalLight(0xcfeeff,.35);fill.position.set(-6,2,-3);scene.add(fill);
+  const world=new T.Group();scene.add(world);
+  const COL={done:0x4FC79A,revisit:0xF0705F,practise:0xFFC53D,current:0x1FA3B5,upcoming:0x9DB4BF};
+  const mats={};
+  const mat=(c,o)=>{const k=c+JSON.stringify(o||{});return mats[k]||(mats[k]=new T.MeshStandardMaterial(Object.assign({color:c,roughness:.55,metalness:.05},o||{})))};
+  const gPlat=new T.CylinderGeometry(.66,.72,.26,40),gStem=new T.CylinderGeometry(.38,.06,1.1,24),gSph=new T.SphereGeometry(.17,24,16),
+        gOcta=new T.OctahedronGeometry(.23),gBox=new T.BoxGeometry(.28,.28,.28),gRing=new T.TorusGeometry(.34,.035,12,40),gDot=new T.SphereGeometry(.05,10,8);
+
+  /* particles */
+  const N=420,pp=new Float32Array(N*3),pc=new Float32Array(N*3),pal=[[1,.77,.24],[.31,.78,.6],[.12,.64,.71],[1,1,1]];
+  for(let i=0;i<N;i++){pp[i*3]=(Math.random()-.5)*16;pp[i*3+1]=(Math.random()-.5)*9;pp[i*3+2]=-6+Math.random()*9;const c=pal[i%4];pc[i*3]=c[0];pc[i*3+1]=c[1];pc[i*3+2]=c[2]}
+  const pg=new T.BufferGeometry();pg.setAttribute('position',new T.BufferAttribute(pp,3));pg.setAttribute('color',new T.BufferAttribute(pc,3));
+  const points=new T.Points(pg,new T.PointsMaterial({size:.07,vertexColors:true,transparent:true,opacity:.75,depthWrite:false}));world.add(points);
+
+  /* mascot */
+  const mascot=new T.Group(),eyes=[];
+  const body=new T.Mesh(new T.SphereGeometry(.44,32,24),mat(0xFFC53D,{roughness:.45}));body.scale.set(1,1.06,1);body.position.y=.47;mascot.add(body);
+  const belly=new T.Mesh(new T.SphereGeometry(.3,24,16),mat(0xFFE9A8));belly.position.set(0,.38,.22);belly.scale.set(1,1,.7);mascot.add(belly);
+  [-.16,.16].forEach(x=>{
+    const eg=new T.Group();eg.position.set(x,.6,.34);
+    const w=new T.Mesh(new T.SphereGeometry(.13,20,14),mat(0xffffff,{roughness:.3}));eg.add(w);
+    const pu=new T.Mesh(new T.SphereGeometry(.06,14,10),mat(0x10283A));pu.position.set(x>0?-.01:.01,-.01,.1);eg.add(pu);
+    mascot.add(eg);eyes.push(eg);
+  });
+  const beak=new T.Mesh(new T.ConeGeometry(.08,.17,14),mat(0xF0705F));beak.rotation.x=Math.PI/2;beak.position.set(0,.47,.46);mascot.add(beak);
+  [-1,1].forEach(s=>{const wing=new T.Mesh(new T.SphereGeometry(.13,16,12),mat(0xF2B02A));wing.scale.set(.5,1.2,.8);wing.position.set(s*.43,.4,0);wing.rotation.z=s*-.25;mascot.add(wing)});
+  const capBase=new T.Mesh(new T.CylinderGeometry(.24,.28,.14,20),mat(0x0B5C67));capBase.position.y=.9;mascot.add(capBase);
+  const capTop=new T.Mesh(new T.BoxGeometry(.8,.05,.8),mat(0x0F6F7C));capTop.position.y=.98;capTop.rotation.y=Math.PI/4;mascot.add(capTop);
+  const tassel=new T.Mesh(new T.SphereGeometry(.05,10,8),mat(0xFFC53D));tassel.position.set(.34,.9,.34);mascot.add(tassel);
+  world.add(mascot);
+  const blob=new T.Mesh(new T.CircleGeometry(.4,24),new T.MeshBasicMaterial({color:0x10283A,transparent:true,opacity:.2,depthWrite:false}));blob.rotation.x=-Math.PI/2;world.add(blob);
+
+  /* state */
+  let nodeRoot=null,data=[],items=[],pick=[],cur=0,target=0,hopState=null,queue=[],squash=0,blinkT=2,blink=0,faceY=0;
+  let container=null,opts={},tip=null,hoverI=-1,inside=false,px=0,py=0,needPick=false,running=false,visible=true,raf=0,last=0,io=null,ro=null,pendingRender=0;
+  const ray=new T.Raycaster(),ptr=new T.Vector2(),tmp=new T.Vector3();
+  const P=(i,n)=>{const t=n>1?i/(n-1):.5;return new T.Vector3(-3.7+7.4*t,-1.4+2.8*t+Math.sin(i*1.25)*.28,Math.sin(i*.95+.4)*1.5)};
+  const stand=i=>items[i].g.position.clone().add(new T.Vector3(0,.13,0));
+
+  function setNodes(nodes){
+    if(nodeRoot)world.remove(nodeRoot);
+    nodeRoot=new T.Group();world.add(nodeRoot);items=[];pick=[];data=nodes;
+    const n=nodes.length;
+    cur=Math.max(0,nodes.findIndex(x=>x.state==='current'));target=cur;
+    const pts=nodes.map((_,i)=>P(i,n));
+    nodes.forEach((nd,i)=>{
+      const g=new T.Group();g.position.copy(pts[i]);
+      const plat=new T.Mesh(gPlat,mat(COL[nd.state]));g.add(plat);
+      const stem=new T.Mesh(gStem,mat(new T.Color(COL[nd.state]).multiplyScalar(.62).getHex()));stem.position.y=-.68;g.add(stem);
+      let orb=null,ring=null;
+      if(nd.state==='done')orb=new T.Mesh(gSph,mat(0xffffff,{roughness:.3}));
+      else if(nd.state==='revisit')orb=new T.Mesh(gOcta,mat(0xffffff,{roughness:.3}));
+      else if(nd.state==='practise')orb=new T.Mesh(gBox,mat(0xffffff,{roughness:.3}));
+      else if(nd.state==='current'){orb=new T.Mesh(gSph,mat(0xffffff,{roughness:.3,emissive:0x1FA3B5,emissiveIntensity:.5}));ring=new T.Mesh(gRing,mat(0xffffff,{emissive:0xffffff,emissiveIntensity:.35}));ring.rotation.x=Math.PI/2;ring.position.y=.22;g.add(ring)}
+      if(orb){orb.position.y=.36;g.add(orb)}
+      plat.userData.index=i;pick.push(plat);nodeRoot.add(g);
+      items.push({g,plat,orb,ring,base:pts[i].clone(),hover:0,phase:i*.9});
+    });
+    if(n>1){
+      const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(p.x,p.y+.16,p.z))),dots=(n-1)*7;
+      for(let k=1;k<dots;k++){if(k%7===0)continue;const seg=Math.floor(k/7);const d=new T.Mesh(gDot,mat(seg<cur?0x4FC79A:0x9DB4BF));d.position.copy(curve.getPoint(k/dots));nodeRoot.add(d)}
+    }
+    hopState=null;queue=[];hoverI=-1;hideTip();
+    if(items.length){mascot.position.copy(stand(reduce?cur:0));if(!reduce&&cur>0)setTimeout(()=>{if(container)hopTo(cur)},650)}
+  }
+  function hopTo(i){
+    if(!items.length)return;i=clamp(i,0,items.length-1);
+    if(reduce){cur=i;mascot.position.copy(stand(i));scheduleRender();return}
+    const from=hopState?hopState.idx:cur;queue=[];
+    const s=i>=from?1:-1;for(let k=from+s;s>0?k<=i:k>=i;k+=s)queue.push(k);
+    if(!hopState){if(queue.length)nextHop();else{hopState={a:mascot.position.clone(),b:stand(i),idx:i,t:0,dur:.55}}}
+    start();
+  }
+  function nextHop(){const idx=queue.shift();if(idx===undefined)return;hopState={a:mascot.position.clone(),b:stand(idx),idx,t:0,dur:.72}}
+
+  function setHover(i){
+    if(i===hoverI)return;hoverI=i;canvas.style.cursor=i>=0?'pointer':'';
+    if(i>=0){tip.innerHTML=`<strong>${esc(data[i].title)}</strong>${STATE_LABEL[data[i].state]}${data[i].detail?'. '+esc(data[i].detail):''}`;tip.hidden=false;placeTip()}else hideTip();
+    if(!running)scheduleRender();
+  }
+  function hideTip(){if(tip)tip.hidden=true}
+  function placeTip(){
+    if(hoverI<0||!container)return;
+    const v=items[hoverI].g.getWorldPosition(tmp);v.y+=.75;v.project(camera);
+    const w=container.clientWidth,h=container.clientHeight;
+    tip.style.left=clamp((v.x*.5+.5)*w,90,w-90)+'px';tip.style.top=clamp((-v.y*.5+.5)*h,60,h-8)+'px';
+  }
+  function pickNow(){
+    if(!inside||!items.length){setHover(-1);return}
+    ptr.set(px,py);ray.setFromCamera(ptr,camera);
+    const hit=ray.intersectObjects(pick,false)[0];setHover(hit?hit.object.userData.index:-1);
+  }
+
+  function update(dt,time){
+    const k=reduce?1:Math.min(1,dt*5);
+    world.rotation.y+=((reduce?0:px*.26+Math.sin(time*.35)*.05)-world.rotation.y)*k;
+    world.rotation.x+=((reduce?0:-py*.09)-world.rotation.x)*k;
+    if(!reduce)points.rotation.y=time*.02;
+    items.forEach((it,i)=>{
+      it.hover+=((i===hoverI?1:0)-it.hover)*(reduce?1:Math.min(1,dt*10));
+      it.g.position.y=it.base.y+it.hover*.12+(reduce?0:Math.sin(time*1.2+it.phase)*.05);
+      const s=1+it.hover*.07;it.plat.scale.set(s,1,s);
+      if(!reduce){if(it.orb&&it.ring===null)it.orb.rotation.y+=dt*.9;if(it.ring){it.ring.rotation.z+=dt;const p=1+.09*Math.sin(time*3);it.ring.scale.set(p,p,p)}}
+    });
+    if(needPick){pickNow();needPick=false}
+    /* mascot */
+    let sy=1,tilt=0;
+    if(hopState){
+      hopState.t+=dt/hopState.dur;const u=Math.min(1,hopState.t),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+      mascot.position.lerpVectors(hopState.a,hopState.b,e);mascot.position.y+=Math.sin(Math.PI*u)*.85;
+      sy=1+.16*Math.sin(Math.PI*u);
+      const dx=hopState.b.x-hopState.a.x;faceY=Math.abs(dx)>.01?Math.atan2(dx,2.2)*.9:0;
+      if(u>=1){cur=hopState.idx;squash=1;hopState=null;nextHop()}
+    }else if(items.length){
+      const b=stand(cur);mascot.position.set(b.x,b.y+(reduce?0:Math.sin(time*2.2)*.02),b.z);faceY*=.85;
+      sy=1+(reduce?0:Math.sin(time*2.2)*.012);
+    }
+    if(squash>0){squash=Math.max(0,squash-dt*3.2);sy*=1-.2*squash*Math.sin(squash*Math.PI)}
+    mascot.scale.set(1/Math.sqrt(sy),sy,1/Math.sqrt(sy));
+    mascot.rotation.y+=(faceY-mascot.rotation.y)*Math.min(1,dt*8+(reduce?1:0));
+    blinkT-=dt;if(blinkT<0&&!reduce){blink=.12;blinkT=2.5+Math.random()*3}
+    if(blink>0)blink-=dt;
+    eyes.forEach(e=>e.scale.y=blink>0?.12:1);
+    blob.position.set(mascot.position.x,(items.length?stand(cur).y:0)+.02,mascot.position.z);
+    const hgt=items.length?Math.max(0,mascot.position.y-stand(cur).y):0;blob.scale.setScalar(clamp(1-hgt*.35,.4,1));
+    placeTip();
+  }
+  function frame(now){
+    if(!running)return;raf=requestAnimationFrame(frame);
+    const dt=Math.min(.05,(now-last)/1000||.016);last=now;update(dt,now/1000);renderer.render(scene,camera);
+  }
+  function start(){if(running||reduce||!visible||document.hidden||!container)return;running=true;last=performance.now();raf=requestAnimationFrame(frame)}
+  function stop(){running=false;cancelAnimationFrame(raf)}
+  function renderOnce(){pendingRender=0;update(.016,performance.now()/1000);renderer.render(scene,camera)}
+  function scheduleRender(){if(running||!container||pendingRender)return;pendingRender=requestAnimationFrame(renderOnce)}
+  function resize(){
+    if(!container)return;const w=container.clientWidth||300,h=container.clientHeight||300;
+    renderer.setSize(w,h,false);camera.aspect=w/h;
+    camera.position.set(0,.7,Math.max(9.6,15.4/camera.aspect));camera.lookAt(0,.2,0);camera.updateProjectionMatrix();
+    if(!running)scheduleRender();
+  }
+  const rel=e=>{const r=canvas.getBoundingClientRect();px=((e.clientX-r.left)/r.width)*2-1;py=-(((e.clientY-r.top)/r.height)*2-1)};
+  canvas.addEventListener('pointermove',e=>{rel(e);inside=true;if(reduce){pickNow()}else needPick=true});
+  canvas.addEventListener('pointerdown',e=>{rel(e);inside=true;pickNow()});
+  canvas.addEventListener('pointerleave',()=>{inside=false;px=0;py=0;setHover(-1)});
+  canvas.addEventListener('click',()=>{if(hoverI>=0){const i=hoverI;hopTo(i);if(opts.onSelect)opts.onSelect(i)}});
+  document.addEventListener('visibilitychange',()=>{document.hidden?stop():start()});
+
+  function mount(c,nodes,o){
+    unmount();container=c;opts=o||{};
+    tip=document.createElement('div');tip.className='gl-tip';tip.hidden=true;
+    c.appendChild(canvas);c.appendChild(tip);
+    setNodes(nodes);resize();
+    io=new IntersectionObserver(es=>{visible=es[0].isIntersecting;visible?start():stop()});io.observe(c);
+    ro=new ResizeObserver(resize);ro.observe(c);
+    visible=true;if(reduce)scheduleRender();else start();
+  }
+  function unmount(){
+    stop();if(io)io.disconnect();if(ro)ro.disconnect();io=ro=null;
+    cancelAnimationFrame(pendingRender);pendingRender=0;
+    if(canvas.parentNode)canvas.parentNode.removeChild(canvas);if(tip&&tip.parentNode)tip.parentNode.removeChild(tip);
+    container=null;hoverI=-1;inside=false;
+  }
+  function onMotionChange(){
+    if(!container)return;
+    if(reduce){stop();hopState=null;queue=[];if(items.length)mascot.position.copy(stand(cur));scheduleRender()}else start();
+  }
+  return{mount,unmount,setNodes:nodes=>{if(container){setNodes(nodes);scheduleRender()}},hopTo,onMotionChange};
+}
+function fallbackSVG(nodes){
+  const n=nodes.length,W=420,H=280;
+  const pt=i=>{const t=n>1?i/(n-1):.5;return[34+t*(W-68),H-70-t*(H-150)+Math.sin(i*1.25)*14]};
+  const col={done:'var(--mint)',revisit:'var(--coral)',practise:'var(--sun)',current:'var(--primary)',upcoming:'var(--line)'};
+  const path=nodes.map((_,i)=>pt(i).join(',')).join(' ');
+  return `<svg class="fallback" viewBox="0 0 ${W} ${H}" role="presentation" aria-hidden="true"><polyline points="${path}" fill="none" stroke="var(--line)" stroke-width="4" stroke-dasharray="2 9" stroke-linecap="round"/>${nodes.map((nd,i)=>{const p=pt(i);return `<ellipse cx="${p[0]}" cy="${p[1]}" rx="17" ry="8" fill="${col[nd.state]}"/>`}).join('')}</svg>`;
+}
+function mountStage(el,nodes,o){
+  if(sceneApi===null)sceneApi=createScene()||false;
+  if(sceneApi){sceneApi.mount(el,nodes,o)}else{el.innerHTML=fallbackSVG(nodes)}
+}
+function unmountStage(){if(sceneApi)sceneApi.unmount()}
+
+/* ---------- forms ---------- */
+const V={
+  name:v=>v.trim().length<2?'Enter your full name, at least 2 characters.':'',
+  email:v=>!v.trim()?'Enter your email address.':(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())?'Enter a valid email such as name@college.edu.':''),
+  phone:v=>!/^\d{10}$/.test(v.replace(/\s/g,''))?'Enter a 10-digit phone number.':'',
+  dept:v=>!v?'Choose your department.':'',
+  password:v=>v.length<8?'Use at least 8 characters.':(!/[A-Za-z]/.test(v)||!/\d/.test(v)?'Include at least one letter and one number.':''),
+  loginpw:v=>!v?'Enter your password.':(v.length<8?'Passwords have at least 8 characters.':''),
+  confirm:(v,f)=>v!==f.elements.password.value?'Passwords do not match.':''
+};
+function field(o){
+  const ids=[o.hint?o.name+'-hint':'',o.name+'-msg'].filter(Boolean).join(' ');
+  let input;
+  if(o.type==='select')input=`<select id="${o.name}" name="${o.name}" aria-describedby="${ids}">${o.options}</select>`;
+  else if(o.type==='password')input=`<div class="pw"><input id="${o.name}" name="${o.name}" type="password" autocomplete="${o.ac||'off'}" aria-describedby="${ids}"><button type="button" class="reveal" aria-pressed="false" aria-label="Show password">Show</button></div>`;
+  else input=`<input id="${o.name}" name="${o.name}" type="${o.type||'text'}" autocomplete="${o.ac||'off'}" ${o.mode?`inputmode="${o.mode}"`:''} aria-describedby="${ids}">`;
+  return `<div class="field"><label for="${o.name}">${o.label}</label>${input}${o.hint?`<p class="hint" id="${o.name}-hint">${o.hint}</p>`:''}<p class="msg" id="${o.name}-msg"></p></div>`;
+}
+function setFieldState(inp,msg){
+  const f=inp.closest('.field'),m=$('.msg',f);
+  f.classList.toggle('invalid',!!msg);f.classList.toggle('valid',!msg&&inp.value!=='');
+  inp.setAttribute('aria-invalid',msg?'true':'false');
+  m.innerHTML=msg?`${ic('alert')}<span>${esc(msg)}</span>`:(inp.value?`${ic('check')}<span>Looks good</span>`:'');
+}
+function bindForm(form,rules,onOk){
+  const check=name=>{const inp=form.elements[name];const msg=rules[name](inp.value,form);setFieldState(inp,msg);return !msg};
+  Object.keys(rules).forEach(name=>{
+    const inp=form.elements[name];
+    inp.addEventListener('blur',()=>{inp.dataset.touched='1';check(name)});
+    inp.addEventListener('input',()=>{if(inp.dataset.touched)check(name);if(name==='password'&&form.elements.confirm&&form.elements.confirm.dataset.touched)check('confirm')});
+    inp.addEventListener('change',()=>{inp.dataset.touched='1';check(name)});
+  });
+  $$('.reveal',form).forEach(b=>b.addEventListener('click',()=>{
+    const inp=b.previousElementSibling,show=inp.type==='password';inp.type=show?'text':'password';
+    b.textContent=show?'Hide':'Show';b.setAttribute('aria-pressed',String(show));b.setAttribute('aria-label',show?'Hide password':'Show password');
+  }));
+  form.addEventListener('submit',e=>{
+    e.preventDefault();let first=null;
+    Object.keys(rules).forEach(name=>{const ok=check(name);if(!ok&&!first)first=form.elements[name]});
+    if(first){first.focus();toast('Fix the highlighted fields to continue.','alert');return}
+    onOk(new FormData(form));
+  });
+}
+
+/* ---------- pages ---------- */
+function pageHome(){
+  return{title:'AdaptLearn: learn from NPTEL lectures, guided by what you know',
+  html:`
+  <section class="container hero">
+    <div>
+      <h1><span>Watch the lecture.</span><span>Know what to study next.</span></h1>
+      <p class="lede">AdaptLearn turns free NPTEL courses into a path that bends around your quiz results and watch time.</p>
+      <div class="cta-row">
+        ${S.user?`<a class="btn primary" href="${S.user.role==='admin'?'#/admin':'#/dashboard'}">${S.user.role==='admin'?'Open admin':'Continue learning'}</a>`:`<a class="btn primary" href="#/register">Create free account</a>`}
+        <a class="btn ghost" href="#/courses">Browse courses</a>
+      </div>
+      <p class="fine">Hover or tap a stop on the path. The owl hops over to show it.</p>
+    </div>
+    <div>
+      <div class="stage" id="stage" role="img" aria-label="Interactive 3D learning path with eight stops. Completed stops are green, stops to revisit are coral, a practice stop is yellow and the next stop is teal. A mascot owl hops between them."></div>
+      ${legendHTML()}
+    </div>
+  </section>
+  <section class="container section">
+    <h2>How the path adapts</h2>
+    <ol class="steps">
+      <li><h3>Watch</h3><p>Lectures play inside the lesson page. Your position and real watch time are saved every ten seconds.</p></li>
+      <li><h3>Check</h3><p>A short quiz after each lecture updates your mastery for every topic it covers.</p></li>
+      <li><h3>Adjust</h3><p>Your weekly plan sends you back to weak topics, to practice for close ones, and forward when you are ready, sized to the hours you have.</p></li>
+    </ol>
+  </section>
+  <section class="container section" style="padding-top:1rem">
+    <div class="inside">
+      <div>
+        <h2>What is inside the portal</h2>
+        <ul class="feature-list">
+          <li><span class="fi">${ic('sparkles')}</span><div><h3>A tutor that shows its sources</h3><p>Ask while you watch. Answers come only from the course material and cite the lecture and timestamp. If the material does not cover it, the tutor says so.</p></div></li>
+          <li><span class="fi">${ic('target')}</span><div><h3>Plans that fit your week</h3><p>Tell it how many hours you have. It packs the most useful revisions, practice and new lectures into them.</p></div></li>
+          <li><span class="fi">${ic('users')}</span><div><h3>Live class chat and alerts</h3><p>Messages and reminders arrive instantly, with no page refresh.</p></div></li>
+          <li><span class="fi">${ic('link')}</span><div><h3>Admin tools</h3><p>Import an NPTEL playlist, review AI-drafted quizzes and see who is falling behind.</p></div></li>
+        </ul>
+      </div>
+      <div class="card" aria-label="Example tutor conversation">
+        <div class="row" style="margin-bottom:.8rem"><span aria-hidden="true">${mascotSVG(44)}</span><strong>Tutor</strong></div>
+        <div class="log" style="height:auto">
+          <div class="bubble me">What is the difference between 2NF and 3NF?</div>
+          <div class="bubble bot">2NF removes partial dependencies, where a non-key column depends on only part of a composite key. 3NF also removes transitive dependencies, where one non-key column depends on another.
+            <div class="cites"><span class="chip cite">${ic('clock')}Lecture 4 at 9:30</span><span class="chip cite">${ic('clock')}Lecture 4 at 13:05</span></div></div>
+          <div class="bubble me">How do I tune a Kubernetes cluster?</div>
+          <div class="bubble bot">That is not in this course's material, so I will not guess. Try asking about normalization, joins, indexing or transactions.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="container section" style="padding-top:0">
+    <div class="cta-band">
+      <div><h2>Try the demo in a minute</h2><p>Any valid email and an 8 character password will do. Use admin@demo.com to see the admin side.</p></div>
+      <a class="btn sun" href="${S.user?'#/dashboard':'#/login'}">${S.user?'Go to dashboard':'Log in to the demo'}</a>
+    </div>
+  </section>`,
+  mount(root){mountStage($('#stage',root),HOME_NODES,{})},cleanup(){unmountStage()}};
+}
+
+function authTop(title,sub){return `<div class="auth-top"><span aria-hidden="true">${mascotSVG(52)}</span><div><h1 style="font-size:1.7rem;margin:0">${title}</h1><p class="muted" style="margin:0">${sub}</p></div></div>`}
+function pageLogin(){
+  return{title:'Log in | AdaptLearn',html:`<div class="container auth"><div class="card">
+    ${authTop('Welcome back','Log in to pick up where you left off.')}
+    <form id="loginForm" novalidate>
+      ${field({name:'email',label:'Email',type:'email',ac:'email'})}
+      ${field({name:'password',label:'Password',type:'password',ac:'current-password'})}
+      <button class="btn primary" type="submit" style="width:100%">Log in</button>
+    </form>
+    <p class="form-note">Demo: any valid email with an 8 character password works. Use <strong>admin@demo.com</strong> for the admin view.</p>
+    <p class="fine" style="margin:1rem 0 0">New here? <a href="#/register">Create an account</a></p></div></div>`,
+  mount(root){
+    bindForm($('#loginForm',root),{email:V.email,password:V.loginpw},fd=>{
+      const email=fd.get('email').trim(),admin=/^admin@/i.test(email);
+      const name=admin?'Admin':email.split('@')[0].replace(/[._-]+/g,' ').replace(/^\w/,c=>c.toUpperCase());
+      login({name:S.user&&S.user.email===email?S.user.name:name,email,role:admin?'admin':'student',dept:'Computer Science'});
+      toast(`Welcome, ${name}.`,'check');location.hash=admin?'#/admin':'#/dashboard';
+    });$('#email',root).focus();
+  }};
+}
+function pageRegister(){
+  return{title:'Create account | AdaptLearn',html:`<div class="container auth"><div class="card">
+    ${authTop('Create your account','Free for every student.')}
+    <form id="regForm" novalidate>
+      ${field({name:'name',label:'Full name',ac:'name'})}
+      ${field({name:'email',label:'Email',type:'email',ac:'email'})}
+      ${field({name:'phone',label:'Phone number',type:'tel',ac:'tel',mode:'numeric',hint:'10 digits, no country code.'})}
+      ${field({name:'dept',label:'Department',type:'select',options:'<option value="">Select department</option><option>Computer Science</option><option>Electronics</option><option>Mechanical</option><option>Civil</option><option>Data Science</option>'})}
+      ${field({name:'password',label:'Password',type:'password',ac:'new-password',hint:'At least 8 characters with a letter and a number.'})}
+      ${field({name:'confirm',label:'Confirm password',type:'password',ac:'new-password'})}
+      <button class="btn primary" type="submit" style="width:100%">Create account</button>
+    </form>
+    <p class="fine" style="margin:1rem 0 0">Already registered? <a href="#/login">Log in</a></p></div></div>`,
+  mount(root){
+    bindForm($('#regForm',root),{name:V.name,email:V.email,phone:V.phone,dept:V.dept,password:V.password,confirm:V.confirm},fd=>{
+      login({name:fd.get('name').trim(),email:fd.get('email').trim(),role:'student',dept:fd.get('dept')});
+      toast('Account created. Welcome to AdaptLearn.','check');notify('Welcome! Enroll in a course to get your first plan.','course');location.hash='#/dashboard';
+    });$('#name',root).focus();
+  }};
+}
+
+function ringSVG(v,size=88){
+  const r=(size-12)/2,c=2*Math.PI*r;
+  return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${pct(v)} percent complete"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="10"/><circle class="ring-fill" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--primary)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" data-off="${c*(1-v)}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="central">${pct(v)}%</text></svg>`;
+}
+const barHTML=(v,cls='')=>`<div class="bar-track ${cls}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct(v)}"><i style="--v:${v}"></i></div>`;
+
+function pageDash(){
+  const first=esc(S.user.name.split(' ')[0]);
+  const hr=new Date().getHours(),greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  const plan=buildPlan(),ids=Object.keys(S.enrolled);
+  const avg=Math.round(Object.values(S.mastery).reduce((a,b)=>a+b,0)/Object.keys(S.mastery).length*100);
+  const done=ids.filter(i=>S.enrolled[i].progress>=1).length;
+  const resume=LESSONS.find(l=>l.id===S.enrolled.dbms.last)||LESSONS[4];
+  const resumeAt=Math.round((S.watched[resume.id]||0)*resume.dur);
+  const lvl=Math.floor(S.xp/500)+1,xpIn=S.xp%500;
+  return{title:'Dashboard | AdaptLearn',html:`<div class="container">
+    <div class="page-head"><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">${greet}, ${first}</h1><p>Here is where you stand this week.</p></div>
+    <div class="dash">
+      <div class="stack">
+        <div class="card resume">
+          ${ringSVG(S.enrolled.dbms.progress,96)}
+          <div><span class="badge b-advance">Continue learning</span>
+            <h2>Database Management Systems</h2>
+            <p class="muted" style="margin:0 0 .8rem">Lecture ${resume.n}: ${resume.title}. Paused at ${fmt(resumeAt)} of ${fmt(resume.dur)}.</p>
+            <a class="btn primary" href="#/learn/${resume.id}">${ic('play')}Resume lecture</a></div>
+        </div>
+        <dl class="stats">
+          <div class="stat"><dt>Courses enrolled</dt><dd>${ids.length}</dd></div>
+          <div class="stat"><dt>In progress</dt><dd>${ids.length-done}</dd></div>
+          <div class="stat"><dt>Completed</dt><dd>${done}</dd></div>
+          <div class="stat"><dt>Average mastery</dt><dd>${avg}%</dd></div>
+        </dl>
+        <div class="card"><h2 style="font-size:1.3rem">My courses</h2>
+          ${ids.map(id=>{const c=COURSES.find(x=>x.id===id),p=S.enrolled[id].progress;return `<div class="course-line"><div class="row between"><strong>${esc(c.title)}</strong><span class="muted">${pct(p)}%${p>=1?' complete':''}</span></div>${barHTML(p,p>=1?'mint':'')}</div>`}).join('')}
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><div class="row between" style="margin-bottom:.7rem"><h2 style="font-size:1.3rem;margin:0">This week's plan</h2><span class="muted fine">${plan.used} of ${plan.budget} min</span></div>
+          <ul class="plan-mini">${plan.fit.slice(0,3).map(i=>`<li><span><span class="badge b-${i.action}">${ACTION_LABEL[i.action]}</span></span><strong>${esc(i.title)}</strong><span class="muted fine">${i.minutes} min</span></li>`).join('')}</ul>
+          <p style="margin:1rem 0 0"><a class="btn ghost small" href="#/plan">${ic('target')}Open full plan</a></p></div>
+        <div class="card"><div class="xp"><span class="flame">${ic('flame')}</span><div><strong>${S.streak} day streak</strong><div class="muted fine">Level ${lvl}. ${500-xpIn} XP to level ${lvl+1}.</div></div></div>
+          <div style="margin-top:.8rem">${barHTML(xpIn/500,'sun')}</div></div>
+        <div class="card"><div class="row between" style="margin-bottom:.6rem"><h2 style="font-size:1.3rem;margin:0">Updates</h2><span class="live"><i></i>Live</span></div>
+          <ul class="plan-mini" id="dashNotifs">${S.notifs.slice(0,4).map(n=>`<li>${esc(n.text)}<span class="muted fine">${esc(n.ago)}</span></li>`).join('')}</ul></div>
+      </div>
+    </div></div>`,
+  mount(root){requestAnimationFrame(()=>$$('.ring-fill',root).forEach(c=>c.style.strokeDashoffset=c.dataset.off))}};
+}
+
+function pageCourses(){
+  let cat='All',q='';
+  const html=`<div class="container">
+    <div class="page-head"><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Courses</h1><p>Free NPTEL lectures, organized into modules with quizzes.</p></div>
+    <div class="filters">
+      <div class="search"><label class="sr" for="q">Search courses</label>${ic('search')}<input id="q" type="search" placeholder="Search by title or topic" autocomplete="off"></div>
+      <div class="row" role="group" aria-label="Filter by category">${CATS.map(c=>`<button class="chip" data-cat="${c}" aria-pressed="${c==='All'}">${c}</button>`).join('')}</div>
+    </div>
+    <p class="sr" id="count" aria-live="polite"></p>
+    <div class="grid" id="grid"></div></div>`;
+  function draw(root){
+    const list=COURSES.filter(c=>(cat==='All'||c.cat===cat)&&(c.title+' '+c.blurb+' '+c.cat).toLowerCase().includes(q.toLowerCase()));
+    $('#count',root).textContent=`${list.length} courses shown`;
+    $('#grid',root).innerHTML=list.length?list.map(c=>{
+      const en=S.enrolled[c.id];
+      return `<article class="course" data-tilt style="--c:var(${c.c});--t:var(${c.t})"><div class="cover">${ic(c.icon)}</div>
+      <div class="body"><span class="badge b-later" style="align-self:flex-start">${c.cat}</span><h3>${esc(c.title)}</h3><p class="muted" style="margin:0">${esc(c.blurb)}</p>
+      <div class="meta"><span>${ic('clock')}${c.weeks} weeks</span><span>${ic('list')}${c.modules} modules</span></div>
+      ${en?`<div>${barHTML(en.progress)}<div class="fine muted" style="margin-top:.25rem">${pct(en.progress)}% complete</div></div>`:''}
+      <div class="push">${en?`<button class="btn primary small" data-open="${c.id}">${ic('play')}Continue</button>`:S.user&&S.user.role==='admin'?'':`<button class="btn sun small" data-enroll="${c.id}">Enroll</button>`}</div></div></article>`}).join('')
+      :`<div class="empty" style="grid-column:1/-1">${mascotSVG(72)}<h3>No courses match</h3><p>Try a different word or choose All.</p><button class="btn ghost small" data-reset>Clear filters</button></div>`;
+  }
+  return{title:'Courses | AdaptLearn',html,mount(root){
+    draw(root);
+    $('#q',root).addEventListener('input',e=>{q=e.target.value;draw(root)});
+    root.addEventListener('click',e=>{
+      const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.cat){cat=b.dataset.cat;$$('[data-cat]',root).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw(root)}
+      else if(b.hasAttribute('data-reset')){cat='All';q='';$('#q',root).value='';$$('[data-cat]',root).forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.cat==='All')));draw(root)}
+      else if(b.dataset.enroll){
+        if(!S.user){toast('Log in to enroll in a course.','alert');location.hash='#/login';return}
+        const c=COURSES.find(x=>x.id===b.dataset.enroll);S.enrolled[c.id]={progress:0,last:c.id+'-1'};
+        toast(`Enrolled in ${c.title}.`,'check');notify(`Enrollment confirmed: ${c.title}.`,'enrollment');draw(root);
+      }else if(b.dataset.open){
+        if(b.dataset.open==='dbms')location.hash='#/learn/'+S.enrolled.dbms.last;else toast('This prototype has sample lessons for Database Management Systems only.','alert');
+      }
+    });
+    root.addEventListener('pointermove',e=>{
+      if(reduce||e.pointerType!=='mouse')return;const c=e.target.closest('[data-tilt]');if(!c)return;
+      const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+      c.style.setProperty('--ry',(x*7).toFixed(2)+'deg');c.style.setProperty('--rx',(-y*7).toFixed(2)+'deg');
+    });
+    root.addEventListener('pointerout',e=>{const c=e.target.closest('[data-tilt]');if(c&&!c.contains(e.relatedTarget)){c.style.setProperty('--ry','0deg');c.style.setProperty('--rx','0deg')}});
+  }};
+}
+
+/* lesson page */
+const TUTOR_KB=[
+  {re:/2nf.*3nf|3nf.*2nf|difference.*(2nf|3nf)/i,a:'2NF removes partial dependencies, where a non-key column depends on only part of a composite key. 3NF also removes transitive dependencies, where one non-key column depends on another.',c:[[4,570],[4,785]]},
+  {re:/normali[sz]ation|normal form|anomal/i,a:'Normalization organizes a schema so each fact is stored once. That reduces redundancy and the insert, update and delete anomalies. The lecture builds it up from 1NF to 2NF to 3NF using functional dependencies.',c:[[4,190],[4,570]]},
+  {re:/b\+|index|b-tree/i,a:'A B+ tree keeps keys sorted in a balanced tree, and every record is reachable at the leaf level. The leaves are linked, so range queries can scan them in order.',c:[[5,320]]},
+  {re:/join/i,a:'An inner join keeps only rows with a match in both tables. An outer join also keeps unmatched rows from one or both sides and fills the missing columns with NULL.',c:[[3,640]]},
+  {re:/transaction|acid|isolation/i,a:'A transaction is a group of operations that must succeed together. ACID stands for atomicity, consistency, isolation and durability.',c:[[6,120]]}
+];
+const CLASS_REPLIES=[['Karthik','Try the dependency diagram on slide 3. It made 2NF click for me.'],['Meera','Same doubt here. Adding it to the class thread.'],['Karthik','I finished the quiz. Question 2 is a good one.']];
+const QUIZ=[
+  {q:'A table has a column that depends on only part of a composite key. Which normal form does this violate?',o:['1NF','2NF','3NF','BCNF'],a:1,exp:'A partial dependency, where a non-key column depends on part of the key, violates 2NF.',c:570},
+  {q:'Deleting one row unintentionally removes other facts you needed. What is this called?',o:['Insertion anomaly','Update anomaly','Deletion anomaly','Selection anomaly'],a:2,exp:'This is a deletion anomaly. It happens when unrelated facts share a row.',c:190},
+  {q:'Which kind of dependency does 3NF forbid for non-key attributes?',o:['Partial','Transitive','Multivalued','None of these'],a:1,exp:'3NF removes transitive dependencies, where a non-key column depends on another non-key column.',c:785}
+];
+function boardSVG(l){
+  return `<svg viewBox="0 0 640 360" role="img" aria-label="Lecture slide: ${esc(l.title)}"><rect width="640" height="360" fill="var(--board)"/>
+  <text x="40" y="62" fill="#FFC53D" font-family="Nunito,sans-serif" font-weight="800" font-size="20">Lecture ${l.n}</text>
+  <text x="40" y="112" fill="#fff" font-family="Nunito,sans-serif" font-weight="900" font-size="38">${esc(l.title)}</text>
+  ${l.pts.map((p,i)=>`<circle cx="48" cy="${170+i*44}" r="6" fill="#4FC79A"/><text x="66" y="${176+i*44}" fill="#D6EEF2" font-family="DM Sans,sans-serif" font-size="22">${esc(p)}</text>`).join('')}
+  <g opacity=".9"><rect x="440" y="150" width="160" height="34" rx="8" fill="#164556"/><rect x="440" y="184" width="160" height="34" rx="0" fill="#1B5568"/><rect x="440" y="218" width="160" height="34" rx="8" fill="#164556"/>
+  <text x="520" y="172" text-anchor="middle" fill="#fff" font-size="16" font-family="DM Sans,sans-serif">${esc(l.topic)}</text></g></svg>`;
+}
+function pageLesson(id){
+  const l=LESSONS.find(x=>x.id===id)||LESSONS[3];
+  const disposers=[];let t=Math.round((S.watched[l.id]||0)*l.dur);if(t>=l.dur-2)t=0;
+  const html=`<div class="container"><div class="lesson">
+    <div class="stack">
+      <div><p class="fine" style="margin:0 0 .3rem"><a href="#/dashboard">Dashboard</a> / Database Management Systems</p>
+        <h1 style="font-size:clamp(1.6rem,3.5vw,2.3rem);margin:0 0 .8rem">Lecture ${l.n}: ${esc(l.title)}</h1>
+        <div class="player"><div class="screen">${boardSVG(l)}</div>
+          <div class="controls"><button class="round" id="playBtn" aria-label="Play">${ic('play')}</button><span class="time" id="tNow">${fmt(t)}</span>
+            <input type="range" id="scrub" min="0" max="${l.dur}" step="1" value="${t}" aria-label="Seek within lecture"><span class="time" id="tEnd">${fmt(l.dur)}</span>
+            <button class="speed" id="speedBtn" aria-label="Playback speed 1 times">1x</button></div></div>
+        <p class="save-note" id="saveNote">${ic('check')}<span>Progress is saved every 10 seconds. The NPTEL YouTube player mounts here in the real app.</span></p>
+        <div class="topics" aria-label="Topics in this lecture"><span class="badge b-later">Topic</span><span class="badge ${masteryLabel(S.mastery[l.topic])[1]}" id="topicBadge">${esc(l.topic)}: ${pct(S.mastery[l.topic])}% mastery</span></div>
+      </div>
+      <div class="flip" id="flip"><div class="flip-inner">
+        <div class="face front" id="qFront"></div><div class="face back" id="qBack" aria-hidden="true"></div></div></div>
+    </div>
+    <div class="card" style="align-self:start">
+      <div class="tabs" role="tablist" aria-label="Lesson helpers">
+        <button role="tab" id="tab-tutor" aria-selected="true" aria-controls="panel-tutor">Tutor</button>
+        <button role="tab" id="tab-class" aria-selected="false" aria-controls="panel-class" tabindex="-1">Class chat</button>
+        <button role="tab" id="tab-list" aria-selected="false" aria-controls="panel-list" tabindex="-1">Lectures</button>
+      </div>
+      <div role="tabpanel" id="panel-tutor" aria-labelledby="tab-tutor">
+        <div class="log" id="tutorLog" role="log" aria-live="polite" aria-label="Tutor conversation"><div class="bubble bot">Hi, I am Pip. Ask me anything about this lecture. I answer only from the course material and show where I found it.</div></div>
+        <div class="suggest" id="suggest"><button class="chip" data-q="What is normalization?">What is normalization?</button><button class="chip" data-q="Difference between 2NF and 3NF?">2NF vs 3NF</button><button class="chip" data-q="How do I tune a Kubernetes cluster?">Off-topic question</button></div>
+        <form class="composer" id="askForm"><label class="sr" for="askInput">Ask the tutor</label><input id="askInput" autocomplete="off" placeholder="Ask about this lecture"><button class="btn primary" type="submit" aria-label="Send question">${ic('send')}</button></form>
+        <p class="ask-at" id="askAt">Your question will include the current time, ${fmt(t)}.</p>
+      </div>
+      <div role="tabpanel" id="panel-class" aria-labelledby="tab-class" hidden>
+        <div class="row between" style="margin-bottom:.6rem"><strong>DBMS, Section A</strong><span class="live"><i></i>3 online</span></div>
+        <div class="log" id="classLog" role="log" aria-live="polite" aria-label="Class chat"><div class="bubble peer"><span class="who">Meera</span>Anyone else stuck on the 2NF example?</div></div>
+        <form class="composer" id="classForm" style="margin-top:.75rem"><label class="sr" for="classInput">Message the class</label><input id="classInput" autocomplete="off" placeholder="Message your classmates"><button class="btn primary" type="submit" aria-label="Send message">${ic('send')}</button></form>
+      </div>
+      <div role="tabpanel" id="panel-list" aria-labelledby="tab-list" hidden>
+        <ul class="lesson-list">${LESSONS.map(x=>{const w=S.watched[x.id]||0;return `<li><a href="#/learn/${x.id}" ${x.id===l.id?'aria-current="page"':''}><span>${w>=.9?ic('check'):ic('play')}</span><span>${x.n}. ${esc(x.title)}</span><small>${w>=.9?'Done':w>0?pct(w)+'%':fmt(x.dur)}</small></a></li>`}).join('')}</ul>
+      </div>
+    </div>
+  </div></div>`;
+
+  function mount(root){
+    /* player */
+    let playing=false,speed=1,timer=0,sinceSave=0;const speeds=[1,2,4];
+    const scrub=$('#scrub',root),play=$('#playBtn',root);
+    const paint=()=>{$('#tNow',root).textContent=fmt(t);scrub.value=t;$('#askAt',root).textContent=`Your question will include the current time, ${fmt(t)}.`};
+    const save=()=>{S.watched[l.id]=Math.max(S.watched[l.id]||0,t/l.dur);$('#saveNote',root).innerHTML=`${ic('check')}<span>Saved at ${fmt(t)}. ${pct(S.watched[l.id])}% of this lecture watched.</span>`};
+    const setPlay=on=>{playing=on;play.innerHTML=ic(on?'pause':'play');play.setAttribute('aria-label',on?'Pause':'Play');clearInterval(timer);if(on)timer=setInterval(()=>{t=Math.min(l.dur,t+.25*speed);sinceSave+=.25;paint();if(sinceSave>=10){sinceSave=0;save()}if(t>=l.dur){setPlay(false);save();toast('Lecture finished. Take the quiz to update your plan.','check')}},250);else save()};
+    play.addEventListener('click',()=>setPlay(!playing));
+    scrub.addEventListener('input',()=>{t=+scrub.value;paint()});
+    $('#speedBtn',root).addEventListener('click',e=>{speed=speeds[(speeds.indexOf(speed)+1)%speeds.length];e.currentTarget.textContent=speed+'x';e.currentTarget.setAttribute('aria-label',`Playback speed ${speed} times`)});
+    disposers.push(()=>{clearInterval(timer)});
+    const seek=s=>{t=clamp(s,0,l.dur);paint();save()};
+
+    /* tabs */
+    const tabs=$$('[role=tab]',root);
+    const show=tab=>tabs.forEach(b=>{const on=b===tab;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;$('#'+b.getAttribute('aria-controls'),root).hidden=!on});
+    tabs.forEach((b,i)=>{b.addEventListener('click',()=>show(b));b.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];show(n);n.focus()}})});
+
+    /* tutor */
+    const log=$('#tutorLog',root);
+    const bubble=(cls,html)=>{const d=document.createElement('div');d.className='bubble '+cls;d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;return d};
+    let busy=false;
+    function ask(text){
+      text=text.trim();if(!text||busy)return;busy=true;log.setAttribute('aria-busy','true');
+      bubble('me',esc(text)+`<div class="fine" style="opacity:.85">at ${fmt(t)}</div>`);
+      const hit=TUTOR_KB.find(k=>k.re.test(text));
+      const b=bubble('bot','<span class="typing" aria-label="Tutor is typing"><i></i><i></i><i></i></span>');
+      const wait=setTimeout(()=>{
+        const ans=hit?hit.a:'That is not in this course\'s material, so I will not guess. Try asking about normalization, joins, indexing or transactions, or ask your instructor.';
+        const finish=()=>{
+          b.innerHTML=esc(ans)+(hit?`<div class="cites">${hit.c.map(c=>`<button class="chip cite" data-seek="${c[1]}" data-lec="${c[0]}">${ic('clock')}Lecture ${c[0]} at ${fmt(c[1])}</button>`).join('')}</div>`:'<div class="cites"><span class="chip cite">No matching source</span></div>');
+          busy=false;log.setAttribute('aria-busy','false');log.scrollTop=log.scrollHeight;
+        };
+        if(reduce){finish();return}
+        const words=ans.split(' ');let i=0;b.textContent='';
+        const iv=setInterval(()=>{i++;b.textContent=words.slice(0,i).join(' ');log.scrollTop=log.scrollHeight;if(i>=words.length){clearInterval(iv);finish()}},42);
+        disposers.push(()=>clearInterval(iv));
+      },reduce?0:700);
+      disposers.push(()=>clearTimeout(wait));
+    }
+    $('#askForm',root).addEventListener('submit',e=>{e.preventDefault();const i=$('#askInput',root);const v=i.value;i.value='';ask(v)});
+    $('#suggest',root).addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(b)ask(b.dataset.q)});
+    log.addEventListener('click',e=>{const b=e.target.closest('[data-seek]');if(!b)return;if(+b.dataset.lec===l.n){seek(+b.dataset.seek);toast(`Jumped to ${fmt(+b.dataset.seek)}.`,'clock')}else{location.hash='#/learn/dbms-'+b.dataset.lec}});
+
+    /* class chat */
+    const cl=$('#classLog',root);let ri=0;
+    $('#classForm',root).addEventListener('submit',e=>{
+      e.preventDefault();const i=$('#classInput',root),v=i.value.trim();if(!v)return;i.value='';
+      const me=document.createElement('div');me.className='bubble me';me.textContent=v;cl.appendChild(me);cl.scrollTop=cl.scrollHeight;
+      const r=CLASS_REPLIES[ri++%CLASS_REPLIES.length];
+      const to=setTimeout(()=>{const p=document.createElement('div');p.className='bubble peer';p.innerHTML=`<span class="who">${r[0]}</span>${esc(r[1])}`;cl.appendChild(p);cl.scrollTop=cl.scrollHeight},reduce?0:1100);
+      disposers.push(()=>clearTimeout(to));
+    });
+
+    /* quiz with flip */
+    const flip=$('#flip',root),front=$('#qFront',root),back=$('#qBack',root);
+    let qi=0,score=0;
+    function drawQ(){
+      const q=QUIZ[qi];
+      front.innerHTML=`<div class="row between"><span class="badge b-advance">Quiz: ${esc(l.topic)}</span><span class="muted fine">Question ${qi+1} of ${QUIZ.length}</span></div>
+        <h3 style="margin:.8rem 0 0">${esc(q.q)}</h3>
+        <form id="qForm"><fieldset style="border:0;padding:0;margin:0"><legend class="sr">Choose one answer</legend><div class="opts">${q.o.map((o,i)=>`<label class="opt"><input type="radio" name="ans" value="${i}"> ${esc(o)}</label>`).join('')}</div></fieldset>
+        <button class="btn primary" type="submit" id="checkBtn" disabled>Check answer</button></form>`;
+      const form=$('#qForm',front);
+      form.addEventListener('change',()=>{$('#checkBtn',front).disabled=false});
+      form.addEventListener('submit',e=>{
+        e.preventDefault();const v=form.elements.ans.value;if(v==='')return;const ok=+v===q.a;if(ok)score++;
+        back.innerHTML=`<div class="verdict ${ok?'ok':'no'}">${ic(ok?'check':'alert')}${ok?'Correct':'Not quite'}</div>
+          <p style="margin:.6rem 0">${esc(q.exp)}</p>
+          ${ok?'':`<button class="chip cite" type="button" data-seek="${q.c}">${ic('refresh')}Rewatch ${fmt(q.c)}</button>`}
+          <div style="margin-top:1rem"><button class="btn primary" type="button" id="nextBtn">${qi===QUIZ.length-1?'See results':'Next question'}</button></div>`;
+        back.setAttribute('aria-hidden','false');front.setAttribute('aria-hidden','true');flip.classList.add('flipped');
+        setTimeout(()=>{const n=$('#nextBtn',back);if(n)n.focus()},reduce?0:650);
+        $('#nextBtn',back).addEventListener('click',()=>{
+          if(qi===QUIZ.length-1){finishQuiz();return}
+          qi++;flip.classList.remove('flipped');back.setAttribute('aria-hidden','true');front.setAttribute('aria-hidden','false');
+          const to=setTimeout(()=>{drawQ();const r=$('input[type=radio]',front);if(r)r.focus()},reduce?0:350);disposers.push(()=>clearTimeout(to));
+        });
+        const sk=$('[data-seek]',back);if(sk)sk.addEventListener('click',()=>{seek(+sk.dataset.seek);toast(`Jumped to ${fmt(+sk.dataset.seek)}.`,'clock')});
+      });
+    }
+    function finishQuiz(){
+      const qv=score/QUIZ.length,w=Math.min(1,S.watched[l.id]||0),retry=Math.min(.2,.05*S.quizTries);S.quizTries++;
+      const raw=clamp(.6*qv+.3*w-retry,0,1),prev=S.mastery[l.topic],next=.7*raw+.3*prev;S.mastery[l.topic]=next;
+      flip.classList.remove('flipped');back.setAttribute('aria-hidden','true');front.setAttribute('aria-hidden','false');
+      const [lab,cls]=masteryLabel(next);
+      front.innerHTML=`<div class="verdict ok">${ic('sparkles')}Quiz complete: ${score} of ${QUIZ.length}</div>
+        <p style="margin:.6rem 0">Your ${esc(l.topic)} mastery moved from <strong>${pct(prev)}%</strong> to <strong>${pct(next)}%</strong> <span class="badge ${cls}">${lab}</span></p>
+        <p class="muted">The planner has re-sorted your week using the new score.</p>
+        <div class="row"><a class="btn primary" href="#/plan">${ic('target')}See updated plan</a><button class="btn ghost" id="retry">Retake quiz</button></div>`;
+      $('#topicBadge',root).className='badge '+cls;$('#topicBadge',root).textContent=`${l.topic}: ${pct(next)}% mastery`;
+      $('#retry',front).addEventListener('click',()=>{qi=0;score=0;drawQ()});
+      notify(`Your study plan was updated after the ${l.topic} quiz.`,'plan');toast(`${l.topic} mastery is now ${pct(next)}%. Plan updated.`,'target');
+    }
+    drawQ();
+  }
+  return{title:`Lecture ${l.n}: ${l.title} | AdaptLearn`,html,mount,cleanup(){disposers.forEach(f=>f());disposers.length=0}};
+}
+
+function pagePlan(){
+  let plan=buildPlan(),hl=-1;
+  const html=`<div class="container">
+    <div class="page-head"><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Your study plan</h1><p>Built from your quiz scores and watch time. Pick a stop on the path to see why it is there.</p></div>
+    <div class="plan-grid">
+      <div class="stack">
+        <div class="stage sm" id="planStage" role="img" aria-label="3D path of this week's plan. The same stops are listed below."></div>
+        ${legendHTML()}
+        <div class="card"><div class="slider"><label for="hours"><strong>Study time this week</strong></label><input type="range" id="hours" min="1" max="8" step="1" value="${S.hours}" aria-describedby="hoursOut"><output id="hoursOut" style="font-weight:800;min-width:4.5ch">${S.hours} h</output></div>
+          <p class="fine muted" style="margin:.4rem 0 0" id="usedNote"></p></div>
+        <div><h2 style="font-size:1.35rem">This week</h2><ol class="plan-list" id="planList"></ol>
+        <h2 style="font-size:1.15rem;margin-top:1.4rem" id="laterHead">Does not fit this week</h2><ol class="plan-list" id="laterList"></ol>
+        <p class="fine muted" style="margin-top:.8rem">The order and hours come from fixed rules. The wording of each reason is written by the AI planner (sample text here).</p></div>
+      </div>
+      <div class="stack"><div class="card"><h2 style="font-size:1.3rem">Topic mastery</h2><div id="mastery"></div>
+        <p class="fine muted" style="margin:0">Below 60% is weak, 60 to 80% is close, above 80% is strong.</p></div>
+        <div class="card"><h2 style="font-size:1.15rem">Want a better score?</h2><p class="muted">Take the Normalization quiz and watch the plan re-sort.</p><a class="btn sun small" href="#/learn/dbms-4">${ic('play')}Open Lecture 4</a></div></div>
+    </div></div>`;
+  function nodesOf(){return[...plan.fit.map(i=>({title:i.title,state:ACTION_STATE[i.action],detail:i.minutes+' min'})),...plan.later.map(i=>({title:i.title,state:'upcoming',detail:i.minutes+' min, next week'}))]}
+  function drawLists(root){
+    const item=(it,idx,later)=>{const st=later?'upcoming':ACTION_STATE[it.action];
+      return `<li><button class="plan-item ${later?'later':''} ${hl===idx?'hl':''}" data-i="${idx}" aria-label="${ACTION_LABEL[it.action]}: ${esc(it.title)}, ${it.minutes} minutes"><span class="shape">${shapeSVG(st,22)}</span>
+      <strong>${esc(it.title)} <span class="badge b-${later?'later':it.action}">${later?'Next week':ACTION_LABEL[it.action]}</span></strong>
+      <p>${esc(it.reason)} <span class="muted">(${it.minutes} min, ${esc(it.course)})</span></p></button></li>`};
+    $('#planList',root).innerHTML=plan.fit.map((it,i)=>item(it,i,false)).join('')||'<li class="muted">Nothing fits. Add more hours above.</li>';
+    $('#laterList',root).innerHTML=plan.later.map((it,i)=>item(it,plan.fit.length+i,true)).join('');
+    $('#laterHead',root).hidden=!plan.later.length;
+    $('#usedNote',root).textContent=`${plan.used} of ${plan.budget} minutes planned.`;
+    $('#mastery',root).innerHTML=Object.entries(S.mastery).sort((a,b)=>a[1]-b[1]).map(([k,v])=>{const [lab,cls]=masteryLabel(v);return `<div class="mastery-row"><span>${esc(k)} <span class="badge ${cls}">${lab}</span></span><span>${pct(v)}%</span>${barHTML(v,['coral','sun','mint'][band(v)])}</div>`}).join('');
+  }
+  return{title:'Study plan | AdaptLearn',html,mount(root){
+    drawLists(root);
+    const select=i=>{hl=i;$$('.plan-item',root).forEach(b=>b.classList.toggle('hl',+b.dataset.i===i));const el=$(`.plan-item[data-i="${i}"]`,root);if(el)el.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'})};
+    mountStage($('#planStage',root),nodesOf(),{onSelect:select});
+    root.addEventListener('click',e=>{const b=e.target.closest('.plan-item');if(!b)return;const i=+b.dataset.i;hl=i;$$('.plan-item',root).forEach(x=>x.classList.toggle('hl',+x.dataset.i===i));if(sceneApi)sceneApi.hopTo(i)});
+    $('#hours',root).addEventListener('input',e=>{
+      S.hours=+e.target.value;$('#hoursOut',root).textContent=S.hours+' h';plan=buildPlan();hl=-1;drawLists(root);
+      if(sceneApi)sceneApi.setNodes(nodesOf());else $('#planStage',root).innerHTML=fallbackSVG(nodesOf());
+    });
+  },cleanup(){unmountStage()}};
+}
+
+function pageAdmin(){
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],vals=[12,18,9,22,17,26,20],mx=Math.max(...vals);
+  const chart=`<svg class="chart" viewBox="0 0 420 190" role="img" aria-label="New enrollments this week: ${days.map((d,i)=>d+' '+vals[i]).join(', ')}" style="width:100%;height:auto">
+    <line x1="10" y1="160" x2="410" y2="160" stroke="var(--line)" stroke-width="2"/>
+    ${vals.map((v,i)=>{const h=v/mx*118,x=24+i*56;return `<rect x="${x}" y="${160-h}" width="34" height="${h}" rx="9"/><text class="val" x="${x+17}" y="${152-h}" text-anchor="middle">${v}</text><text x="${x+17}" y="180" text-anchor="middle">${days[i]}</text>`}).join('')}</svg>`;
+  const html=`<div class="container">
+    <div class="page-head"><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Admin overview</h1><p>Sample numbers for the demo.</p></div>
+    <dl class="stats" style="margin-bottom:1.25rem">
+      <div class="stat"><dt>Total students</dt><dd>1,284</dd></div><div class="stat"><dt>Active enrollments</dt><dd>3,910</dd></div>
+      <div class="stat"><dt>Average completion</dt><dd>58%</dd></div><div class="stat"><dt>At-risk students</dt><dd>${AT_RISK.length}</dd></div>
+    </dl>
+    <div class="admin-grid">
+      <div class="card"><h2 style="font-size:1.3rem">New enrollments this week</h2>${chart}</div>
+      <div class="card"><h2 style="font-size:1.3rem">Course Studio</h2><p class="muted">Paste an NPTEL playlist link. The studio drafts modules, topics and quizzes for you to review.</p>
+        <form id="importForm" novalidate>${field({name:'url',label:'Playlist URL',type:'url',hint:'Example: https://www.youtube.com/playlist?list=...'})}
+        <button class="btn primary" type="submit" id="importBtn">${ic('link')}Import playlist</button></form>
+        <ol class="import-steps" id="steps" aria-live="polite"></ol><div id="draft"></div></div>
+    </div>
+    <div class="card" style="margin-top:1.25rem"><div class="row between" style="margin-bottom:.8rem"><h2 style="font-size:1.3rem;margin:0">Students who may need help</h2><span class="muted fine">Mastery below 50% or inactive for 5 or more days</span></div>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Student</th><th scope="col">Course</th><th scope="col">Mastery</th><th scope="col">Last active</th><th scope="col"><span class="sr">Action</span></th></tr></thead>
+      <tbody>${AT_RISK.map((s,i)=>`<tr><td><strong>${esc(s.name)}</strong></td><td>${esc(s.course)}</td><td><span class="badge b-revisit">${pct(s.m)}% Weak</span></td><td>${esc(s.last)}</td><td><button class="btn ghost small" data-nudge="${i}">${ic('bell')}Send nudge</button></td></tr>`).join('')}</tbody></table></div></div></div>`;
+  const disposers=[];
+  return{title:'Admin | AdaptLearn',html,mount(root){
+    root.addEventListener('click',e=>{const b=e.target.closest('[data-nudge]');if(!b)return;const s=AT_RISK[+b.dataset.nudge];b.disabled=true;b.innerHTML=`${ic('check')}Nudge sent`;toast(`Nudge sent to ${s.name}.`,'bell')});
+    const form=$('#importForm',root);
+    const rule=v=>!v.trim()?'Paste a playlist link.':(/^https?:\/\/(www\.)?(youtube\.com\/playlist\?list=|youtu\.be\/)[\w-]+/i.test(v.trim())?'':'That does not look like a YouTube playlist link.');
+    const STEPS=['Fetching playlist details','Grouping videos into modules','Tagging topics','Indexing transcripts','Drafting quizzes'];
+    bindForm(form,{url:rule},()=>{
+      const btn=$('#importBtn',root),list=$('#steps',root),draft=$('#draft',root);btn.disabled=true;draft.innerHTML='';
+      list.innerHTML=STEPS.map(s=>`<li>${ic('clock')}<span>${s}</span></li>`).join('');
+      let i=0;const lis=$$('li',list);
+      const tick=()=>{
+        if(i>0){lis[i-1].className='done';lis[i-1].firstElementChild.outerHTML=ic('check')}
+        if(i>=STEPS.length){
+          btn.disabled=false;
+          draft.innerHTML=`<div class="card" style="margin-top:1rem;background:var(--surface-2);box-shadow:none"><strong>Draft ready</strong><p class="muted" style="margin:.2rem 0 .8rem">5 modules, 32 lectures, 14 topics and 32 quizzes are waiting for review.</p>
+          <div class="table-wrap"><table style="min-width:420px"><thead><tr><th scope="col">Quiz draft</th><th scope="col"><span class="sr">Action</span></th></tr></thead><tbody>${['Lecture 1: ER model, 5 questions','Lecture 2: Relational algebra, 5 questions','Lecture 3: SQL and joins, 6 questions'].map((q,k)=>`<tr><td>${q}</td><td><button class="btn ghost small" data-approve="${k}">Approve</button></td></tr>`).join('')}</tbody></table></div></div>`;
+          $$('[data-approve]',draft).forEach(a=>a.addEventListener('click',()=>{a.disabled=true;a.innerHTML=`${ic('check')}Approved`}));
+          toast('Playlist imported as a draft course.','check');return;
+        }
+        lis[i].className='run';i++;const to=setTimeout(tick,reduce?0:800);disposers.push(()=>clearTimeout(to));
+      };tick();
+    });
+  },cleanup(){disposers.forEach(f=>f())}};
+}
+function pageNotFound(){return{title:'Not found | AdaptLearn',html:`<div class="container empty" style="padding-top:4rem">${mascotSVG(96)}<h1 style="font-size:2rem">That page is not here</h1><p>Check the address or go back to the start.</p><a class="btn primary" href="#/">Back to home</a></div>`}}
+
+/* ---------- router ---------- */
+const ROUTES=[
+  {p:/^\/$/,f:pageHome},{p:/^\/login$/,f:pageLogin},{p:/^\/register$/,f:pageRegister},
+  {p:/^\/dashboard$/,f:pageDash,auth:true,role:'student'},{p:/^\/courses$/,f:pageCourses},
+  {p:/^\/learn\/([\w-]+)$/,f:pageLesson,auth:true,role:'student'},{p:/^\/plan$/,f:pagePlan,auth:true,role:'student'},
+  {p:/^\/admin$/,f:pageAdmin,auth:true,role:'admin'}
+];
+let active=null;
+function route(){
+  if(active&&active.cleanup)active.cleanup();active=null;
+  const path=currentPath();let page=null;
+  for(const r of ROUTES){
+    const m=path.match(r.p);if(!m)continue;
+    if(r.auth&&!S.user){toast('Log in to open that page.','alert');location.hash='#/login';return}
+    if(r.role&&S.user&&S.user.role!==r.role){toast(r.role==='admin'?'That page is for admins.':'Admins have their own overview.','alert');location.hash=S.user.role==='admin'?'#/admin':'#/dashboard';return}
+    page=r.f(m[1]);break;
+  }
+  if(!page)page=pageNotFound();
+  const view=$('#view');view.innerHTML=page.html;document.title=page.title;
+  active=page;renderNav();closeMenu();
+  window.scrollTo(0,0);
+  $('#main').focus({preventScroll:true});
+  if(page.mount)page.mount(view);
+}
+window.addEventListener('hashchange',route);
+
+/* ---------- init ---------- */
+(function init(){
+  const th=store.get('al_theme');if(th)document.documentElement.dataset.theme=th;
+  $('#brandMark').innerHTML=mascotSVG(38);
+  if(S.user&&S.user.role!=='admin')startLive();
+  route();
+})();
+})();
+</script>
+</body>
+</html>

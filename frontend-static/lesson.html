@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 5: Indexing and B+ trees | AdaptLearn</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="lesson.html">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>AdaptLearn</a>
+    <nav class="main-nav" id="mainNav" aria-label="Main"></nav>
+    <div class="nav-tools" id="navTools"></div>
+    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">&#9776;</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container">
+    <div class="lesson-grid">
+      <div>
+        <p class="muted" style="margin:1rem 0 .3rem"><a href="dashboard.html">Dashboard</a> / Database Management Systems</p>
+        <h1 style="font-size:clamp(1.5rem,3.5vw,2.1rem);margin:0 0 .8rem">Lecture 5: Indexing and B+ trees</h1>
+
+        <div class="player">
+          <!--
+            This is a placeholder for the embedded NPTEL video (task: real
+            YouTube IFrame Player API integration). In the React build this
+            div is replaced by an <iframe> whose src points at the lecture's
+            YouTube ID, and the IFrame Player API events (onStateChange,
+            getCurrentTime) drive the watch-progress heartbeat.
+          -->
+          <div class="screen" id="videoPlaceholder">
+            <div>
+              <p style="margin:0 0 .4rem;font-weight:700">NPTEL lecture video</p>
+              <p class="muted" style="color:#B9D6DC;margin:0">Embeds here via the YouTube IFrame Player API</p>
+            </div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" id="playBtn" aria-label="Play">&#9654;</button>
+            <span class="time" id="tNow">4:00</span>
+            <input type="range" id="scrub" min="0" max="980" step="1" value="240" aria-label="Seek within lecture">
+            <span class="time" id="tEnd">16:20</span>
+          </div>
+        </div>
+
+        <div class="topic-row">
+          <span class="badge b-later">Topic</span>
+          <span class="badge b-practise" id="topicBadge">Indexing: 55% mastery</span>
+        </div>
+
+        <div class="card" style="margin-top:1.25rem">
+          <h2 style="font-size:1.15rem">Quick check</h2>
+          <div id="quizArea"></div>
+        </div>
+      </div>
+
+      <div class="card" style="align-self:start">
+        <h2 style="font-size:1.2rem">Ask the tutor</h2>
+        <p class="muted" style="margin-top:-.5rem;font-size:.9rem">Answers come from this course's material and cite the lecture and timestamp.</p>
+        <div class="log" id="tutorLog" role="log" aria-live="polite">
+          <div class="bubble bot">Hi, I'm your tutor for this course. Ask me anything about the current lecture.</div>
+        </div>
+        <form class="composer" id="askForm">
+          <label class="sr-only" for="askInput">Ask the tutor</label>
+          <input id="askInput" autocomplete="off" placeholder="Ask about this lecture">
+          <button class="btn primary" type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container"><p style="margin:0">AdaptLearn is a student project prototype.</p></div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+<script type="module">
+  import { requireAuth } from './js/auth.js';
+  import { store } from './js/state.js';
+
+  const user = requireAuth();
+  if (user) {
+    // --- placeholder playback (real player: YouTube IFrame Player API) ---
+    let t = 240, dur = 980, playing = false, timer = null;
+    const fmt = (s) => Math.floor(s / 60) + ':' + String(Math.round(s) % 60).padStart(2, '0');
+    const paint = () => { document.getElementById('tNow').textContent = fmt(t); document.getElementById('scrub').value = t; };
+    const playBtn = document.getElementById('playBtn');
+    playBtn.addEventListener('click', () => {
+      playing = !playing;
+      playBtn.textContent = playing ? '\u23F8' : '\u25B6';
+      clearInterval(timer);
+      if (playing) {
+        timer = setInterval(() => {
+          t = Math.min(dur, t + 1);
+          paint();
+          if (t % 10 === 0) store.update('watched', (w) => ({ ...w, 'dbms-5': t / dur }));
+          if (t >= dur) { clearInterval(timer); playing = false; playBtn.textContent = '\u25B6'; }
+        }, 250);
+      }
+    });
+    document.getElementById('scrub').addEventListener('input', (e) => { t = +e.target.value; paint(); });
+
+    // --- quiz: one question, updates a mastery badge ---
+    const quizArea = document.getElementById('quizArea');
+    const badge = document.getElementById('topicBadge');
+    quizArea.innerHTML = `
+      <p><strong>A B+ tree keeps its records reachable at which level?</strong></p>
+      <div class="quiz-opts">
+        <label class="quiz-opt"><input type="radio" name="q1" value="0"> The root node</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="1"> Any internal node</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="2"> The leaf nodes</label>
+      </div>
+      <button class="btn primary small" id="checkBtn" disabled>Check answer</button>
+      <div id="quizResult"></div>`;
+    quizArea.addEventListener('change', () => { document.getElementById('checkBtn').disabled = false; });
+    document.getElementById('checkBtn').addEventListener('click', () => {
+      const val = quizArea.querySelector('input[name=q1]:checked').value;
+      const ok = val === '2';
+      const mastery = ok ? 0.78 : 0.5;
+      badge.textContent = `Indexing: ${Math.round(mastery * 100)}% mastery`;
+      badge.className = 'badge ' + (mastery < 0.6 ? 'b-revisit' : mastery < 0.8 ? 'b-practise' : 'b-done');
+      document.getElementById('quizResult').innerHTML = `<div class="result-box">${ok
+        ? 'Correct. B+ tree leaves hold every record, linked in order for fast range scans.'
+        : 'Not quite. Every record sits at the leaf level, so leaves are linked for range scans.'}</div>`;
+    });
+
+    // --- tutor: keyword-matched canned answers with a citation ---
+    const KB = [
+      { re: /index|b\+|b-tree/i, a: 'A B+ tree keeps keys sorted in a balanced tree, and every record is reachable at the leaf level. The leaves are linked, so range queries can scan them in order.', cite: 'Lecture 5 at 4:00' },
+      { re: /normal/i, a: 'Normalization organizes a schema so each fact is stored once, reducing redundancy and update anomalies.', cite: 'Lecture 4 at 9:30' }
+    ];
+    const log = document.getElementById('tutorLog');
+    document.getElementById('askForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('askInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      log.insertAdjacentHTML('beforeend', `<div class="bubble me">${text}</div>`);
+      const hit = KB.find((k) => k.re.test(text));
+      const answer = hit
+        ? `${hit.a}<div class="muted" style="font-size:.8rem;margin-top:.4rem">Source: ${hit.cite}</div>`
+        : `That is not in this course's material, so I will not guess. Try asking about indexing or normalization.`;
+      setTimeout(() => {
+        log.insertAdjacentHTML('beforeend', `<div class="bubble bot">${answer}</div>`);
+        log.scrollTop = log.scrollHeight;
+      }, 500);
+    });
+  }
+</script>
+</body>
+</html>

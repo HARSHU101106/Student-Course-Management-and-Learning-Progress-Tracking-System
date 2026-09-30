@@ -1,0 +1,23 @@
+{
+  "name": "adaptlearn-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "axios": "latest",
+    "msw": "^3.0.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "^7.18.4",
+    "vite": "latest"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdaptLearn: learn from NPTEL lectures, guided by what you know</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="index.html">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>AdaptLearn</a>
+    <nav class="main-nav" id="mainNav" aria-label="Main"></nav>
+    <div class="nav-tools" id="navTools"></div>
+    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">&#9776;</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="container hero">
+    <div>
+      <h1>Watch the lecture. Know what to study next.</h1>
+      <p class="lede">AdaptLearn turns free NPTEL courses into a path that bends around your quiz results and watch time.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="register.html">Create free account</a>
+        <a class="btn ghost" href="#courses">Browse courses</a>
+      </div>
+    </div>
+    <div class="path-art" aria-label="Example learning path with five stops">
+      <ol>
+        <li><span class="node done">&#10003;</span><div><strong>ER model</strong><div class="muted">Mastery 88%</div></div></li>
+        <li><span class="node revisit">!</span><div><strong>Normalization</strong><div class="muted">Mastery 42%. Rewatch 9:30&ndash;15:10</div></div></li>
+        <li><span class="node practise">?</span><div><strong>Relational algebra</strong><div class="muted">Mastery 74%. Practise 10 questions</div></div></li>
+        <li><span class="node current">&#9654;</span><div><strong>Transactions</strong><div class="muted">Next lecture, about 20 min</div></div></li>
+        <li><span class="node upcoming">&middot;</span><div><strong>Concurrency control</strong><div class="muted">Unlocks after Transactions</div></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="container section">
+    <h2>How the path adapts</h2>
+    <ol class="steps">
+      <li><h3>Watch</h3><p>Lectures play inside the lesson page. Your position and real watch time are saved as you go.</p></li>
+      <li><h3>Check</h3><p>A short quiz after each lecture updates your mastery for every topic it covers.</p></li>
+      <li><h3>Adjust</h3><p>Your weekly plan sends you back to weak topics, to practice for close ones, and forward when you are ready.</p></li>
+    </ol>
+  </section>
+
+  <section class="container section" id="courses" style="padding-top:0">
+    <h2>Courses in the catalogue</h2>
+    <div class="course-grid" id="courseGrid" aria-live="polite">
+      <p class="muted">Loading courses&hellip;</p>
+    </div>
+  </section>
+
+  <section class="container section" style="padding-top:0">
+    <div class="cta-band">
+      <div><h2 style="margin:0">Try the demo in a minute</h2><p>Any valid email and an 8 character password will do. Use admin@demo.com for the admin view.</p></div>
+      <a class="btn sun" href="login.html">Log in to the demo</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p style="margin:0 0 .3rem">AdaptLearn is a student project prototype. Course and progress data shown here is sample data.</p>
+    <p style="margin:0">Lecture videos are embedded from the official NPTEL YouTube channel. AdaptLearn is not affiliated with NPTEL.</p>
+  </div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+<script type="module">
+  import { apiGetCourses, apiEnroll } from './js/api.js';
+  import { store } from './js/state.js';
+  import { toast } from './js/ui.js';
+
+  const grid = document.getElementById('courseGrid');
+
+  function render(courses) {
+    const enrolled = store.get('enrolled');
+    grid.innerHTML = courses.map((c) => `
+      <article class="course-card">
+        <div class="cover">${c.title.split(' ').map(w => w[0]).slice(0,2).join('')}</div>
+        <div class="body">
+          <span class="badge b-later">${c.cat}</span>
+          <h3>${c.title}</h3>
+          <p class="muted" style="margin:0">${c.blurb}</p>
+          <div class="meta"><span>${c.weeks} weeks</span><span>${c.modules} modules</span></div>
+          <div class="push">
+            ${enrolled[c.id]
+              ? `<a class="btn primary small" href="dashboard.html">Continue</a>`
+              : `<button class="btn sun small" data-enroll="${c.id}">Enroll</button>`}
+          </div>
+        </div>
+      </article>`).join('');
+  }
+
+  apiGetCourses().then(render);
+
+  grid.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-enroll]');
+    if (!btn) return;
+    if (!store.get('user')) { toast('Log in to enroll in a course.'); location.href = 'login.html'; return; }
+    const id = btn.dataset.enroll;
+    await apiEnroll(id);
+    store.update('enrolled', (en) => ({ ...en, [id]: { progress: 0, last: null } }));
+    toast('Enrolled. Find it on your dashboard.');
+    apiGetCourses().then(render);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard | AdaptLearn</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="dashboard.html">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>AdaptLearn</a>
+    <nav class="main-nav" id="mainNav" aria-label="Main"></nav>
+    <div class="nav-tools" id="navTools"></div>
+    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">&#9776;</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container">
+    <div class="page-head">
+      <h1 id="greeting" style="font-size:clamp(1.7rem,4vw,2.4rem)">Welcome</h1>
+      <p>Here is where you stand this week.</p>
+    </div>
+
+    <div class="dash-grid">
+      <div>
+        <div class="card resume" style="margin-bottom:1.25rem">
+          <span class="badge b-advance">Continue learning</span>
+          <h2 style="margin:.4rem 0 .2rem">Database Management Systems</h2>
+          <p class="muted" id="resumeLine" style="margin:0 0 .8rem"></p>
+          <div class="bar-track"><i id="courseBar" style="--v:0%"></i></div>
+          <div style="margin-top:1rem"><a class="btn primary" href="lesson.html">Resume lecture</a></div>
+        </div>
+
+        <dl class="stats" style="margin-bottom:1.25rem">
+          <div class="stat"><dt>Courses enrolled</dt><dd id="statCourses">0</dd></div>
+          <div class="stat"><dt>In progress</dt><dd id="statProgress">0</dd></div>
+          <div class="stat"><dt>Completed</dt><dd id="statDone">0</dd></div>
+          <div class="stat"><dt>Average mastery</dt><dd id="statMastery">0%</dd></div>
+        </dl>
+
+        <div class="card">
+          <h2 style="font-size:1.3rem">My courses</h2>
+          <div id="courseLines"><p class="muted">No enrollments yet. <a href="index.html">Browse courses</a>.</p></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:1.25rem">
+          <h2 style="font-size:1.3rem">Updates</h2>
+          <ul class="plan-mini" id="notifList"></ul>
+        </div>
+        <div class="card">
+          <h2 style="font-size:1.2rem">This week's plan</h2>
+          <p class="muted">Full adaptive planner arrives with the AI service.</p>
+          <ul class="plan-mini">
+            <li><span><span class="badge b-revisit">Revisit</span></span><strong>Normalization</strong></li>
+            <li><span><span class="badge b-practise">Practise</span></span><strong>Relational algebra</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container"><p style="margin:0">AdaptLearn is a student project prototype.</p></div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+<script type="module">
+  import { store } from './js/state.js';
+  import { requireAuth } from './js/auth.js';
+  import { apiGetCourses } from './js/api.js';
+
+  const user = requireAuth();
+  if (user) {
+    document.getElementById('greeting').textContent =
+      (new Date().getHours() < 12 ? 'Good morning, ' : 'Welcome back, ') + user.name.split(' ')[0];
+
+    const enrolled = store.get('enrolled');
+    const ids = Object.keys(enrolled);
+    const dbms = enrolled.dbms;
+
+    if (dbms) {
+      document.getElementById('resumeLine').textContent =
+        `${Math.round(dbms.progress * 100)}% complete. Pick up from Lecture 5: Indexing and B+ trees.`;
+      document.getElementById('courseBar').style.setProperty('--v', Math.round(dbms.progress * 100) + '%');
+    }
+
+    const done = ids.filter((id) => enrolled[id].progress >= 1).length;
+    document.getElementById('statCourses').textContent = ids.length;
+    document.getElementById('statProgress').textContent = ids.length - done;
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statMastery').textContent = ids.length ? '67%' : '0%';
+
+    apiGetCourses().then((courses) => {
+      if (!ids.length) return;
+      document.getElementById('courseLines').innerHTML = ids.map((id) => {
+        const c = courses.find((x) => x.id === id);
+        const p = enrolled[id];
+        if (!c) return '';
+        return `<div class="course-line">
+          <div style="display:flex;justify-content:space-between"><strong>${c.title}</strong><span class="muted">${Math.round(p.progress * 100)}%</span></div>
+          <div class="bar-track"><i style="--v:${Math.round(p.progress * 100)}%"></i></div>
+        </div>`;
+      }).join('');
+    });
+
+    const notifs = store.get('notifications');
+    document.getElementById('notifList').innerHTML = notifs.slice(0, 4).map((n) =>
+      `<li>${n.text}<span class="muted" style="font-size:.8rem">${n.ago}</span></li>`
+    ).join('') || '<li class="muted">No notifications yet.</li>';
+  }
+</script>
+</body>
+</html>
