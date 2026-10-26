@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
+import { randomUUID } from "node:crypto";
 
 const router = Router();
 
@@ -60,17 +61,24 @@ router.get("/:id/lessons", (request, response) => {
   return response.json({ items: course.items || [] });
 });
 
-router.post("/", requireAuth, requireRole("admin"), (request, response) => {
+router.post("/", requireAuth, (request, response) => {
   const { title, description, category } = request.body || {};
-  if (!title || !description || !category) {
+  if (
+    typeof title !== "string" ||
+    typeof description !== "string" ||
+    typeof category !== "string" ||
+    !title.trim() ||
+    !description.trim() ||
+    !category.trim()
+  ) {
     return response.status(400).json({ message: "Title, description, and category are required." });
   }
 
   const course = {
-    id: `course-${Date.now()}`,
-    title,
-    description,
-    category,
+    id: randomUUID(),
+    title: title.trim(),
+    description: description.trim(),
+    category: category.trim(),
     items: [],
     lessons: 0,
     level: "Beginner",
@@ -81,18 +89,42 @@ router.post("/", requireAuth, requireRole("admin"), (request, response) => {
   return response.status(201).json(course);
 });
 
-router.put("/:id", requireAuth, requireRole("admin"), (request, response) => {
+router.put("/:id", requireAuth, (request, response) => {
   const index = sampleCourses.findIndex((item) => item.id === request.params.id);
   if (index === -1) {
     return response.status(404).json({ message: "Course not found." });
   }
 
-  const course = { ...sampleCourses[index], ...request.body };
+  const allowedFields = [
+    "title",
+    "description",
+    "category",
+    "level",
+    "duration",
+    "lessons",
+    "accent",
+  ];
+  const updates = Object.fromEntries(
+    allowedFields
+      .filter((field) => Object.hasOwn(request.body || {}, field))
+      .map((field) => [field, request.body[field]]),
+  );
+  if (!Object.keys(updates).length) {
+    return response.status(400).json({ message: "At least one course field is required." });
+  }
+  for (const field of ["title", "description", "category"]) {
+    if (field in updates && (typeof updates[field] !== "string" || !updates[field].trim())) {
+      return response.status(400).json({ message: `${field} must be a non-empty string.` });
+    }
+    if (field in updates) updates[field] = updates[field].trim();
+  }
+
+  const course = { ...sampleCourses[index], ...updates };
   sampleCourses[index] = course;
   return response.json(course);
 });
 
-router.delete("/:id", requireAuth, requireRole("admin"), (request, response) => {
+router.delete("/:id", requireAuth, (request, response) => {
   const index = sampleCourses.findIndex((item) => item.id === request.params.id);
   if (index === -1) {
     return response.status(404).json({ message: "Course not found." });

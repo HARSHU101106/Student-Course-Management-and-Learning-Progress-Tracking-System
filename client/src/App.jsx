@@ -83,6 +83,7 @@ function Button({
 
 function getStoredUser() {
   try {
+    if (!sessionStorage.getItem("token")) return null;
     const stored = JSON.parse(
       localStorage.getItem("adaptlearn-user") || "null",
     );
@@ -148,13 +149,19 @@ function App() {
           ? await authApi.register(payload)
           : await authApi.login(payload);
 
+      if (account.mode === "register") {
+        window.alert(response.message || "Registration successful. Please log in.");
+        go("/login");
+        return;
+      }
+
+      if (response.token) {
+        sessionStorage.setItem("token", response.token);
+      }
+      const authenticatedUser = response.user || response.student;
       const nextUser = {
-        ...response.user,
-        role:
-          response.user?.role === "admin" ||
-          response.user?.email?.toLowerCase().startsWith("admin@")
-            ? "admin"
-            : "student",
+        ...authenticatedUser,
+        role: authenticatedUser?.role || "student",
       };
 
       setUser(nextUser);
@@ -167,6 +174,7 @@ function App() {
   };
   const logout = () => {
     setUser(null);
+    sessionStorage.removeItem("token");
     localStorage.removeItem("adaptlearn-user");
     go("/");
   };
@@ -542,16 +550,12 @@ function Auth({ mode, onSubmit }) {
   });
   const submit = (event) => {
     event.preventDefault();
-    const email = form.email || "student@demo.com";
     onSubmit({
       mode,
-      name:
-        mode === "register"
-          ? form.name || "Alex Student"
-          : (email.split("@")[0] || "Alex").replace(/[._-]/g, " "),
-      email,
+      name: form.name,
+      email: form.email,
       password: form.password,
-      role: email.toLowerCase().startsWith("admin@") ? "admin" : "student",
+      department: form.department,
     });
   };
   return (
@@ -607,6 +611,7 @@ function Auth({ mode, onSubmit }) {
             <input
               required
               minLength="8"
+              maxLength="72"
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -619,9 +624,9 @@ function Auth({ mode, onSubmit }) {
           </Button>
         </form>
         <p className="form-note">
-          Demo login: <strong>student@demo.com</strong> /{" "}
-          <strong>demo1234</strong>. For the admin workspace, use{" "}
-          <strong>admin@demo.com</strong> / <strong>demo1234</strong>.
+          {mode === "login"
+            ? "New here? Create an account to get started."
+            : "Your password is stored securely."}
         </p>
         <a
           className="text-link"

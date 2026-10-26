@@ -22,9 +22,19 @@ Recommended indexes:
 - `topic_mastery(studentId, courseId, topic)` unique
 - vector search on `content_chunks.embedding` filtered by `courseId`
 
-## Auth and authorization
+## Task 9 and 10 authentication and course API
 
-All routes except `/api/auth/*`, `/api/health`, and `/` are protected by JWT middleware. The demo middleware accepts a bearer token and stores a `request.user` object with an `id`, `email`, and `role`.
+Authentication and course routes are available under `/api/v1` as specified in the task PDF. The existing `/api/auth` and `/api/courses` aliases remain available for the current React client and other project consumers.
+
+- `POST /api/v1/auth/register`: validates name, email, password, and department; stores a bcrypt password hash; returns a safe student object. Duplicate email returns `409`.
+- `POST /api/v1/auth/login`: compares the submitted password with its hash and returns a signed JWT, `tokenType`, `expiresIn`, and safe student object. Invalid credentials return `401`.
+- `GET /api/v1/courses` and `GET /api/v1/courses/:id`: public course browsing.
+- `POST /api/v1/courses`, `PUT /api/v1/courses/:id`, and `DELETE /api/v1/courses/:id`: require a valid JWT; requests without a token or with an invalid/expired token return `401`.
+- The Axios client reads the token from `sessionStorage` and attaches it as a Bearer token. Logging out removes it.
+
+Set `JWT_SECRET` to a unique secret of at least 32 random bytes and configure `JWT_EXPIRES_IN` before starting the API. See `server/.env.example`; never commit a real `.env` file or secret.
+
+Student accounts and course changes currently use in-memory arrays to match the task's stated learning-stage implementation. They are lost when the server restarts; replace these stores with database models before deployment.
 
 ## Core routes
 
@@ -49,6 +59,8 @@ All routes except `/api/auth/*`, `/api/health`, and `/` are protected by JWT mid
 - `POST /api/ai/quiz/generate`
 - `GET /api/notifications`
 - `PATCH /api/notifications/:id/read`
+
+The `/api/v1/auth/*` and `/api/v1/courses*` routes expose the Task 9/10 API prefix.
 
 ## AI design summary
 

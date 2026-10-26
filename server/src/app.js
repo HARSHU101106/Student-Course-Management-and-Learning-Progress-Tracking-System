@@ -29,6 +29,9 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/students", studentRoutes);
 
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/courses", courseRoutes);
+
 app.use((request, response) => {
   response.status(404).json({ message: `Route not found: ${request.method} ${request.originalUrl}` });
 });

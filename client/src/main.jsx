@@ -7,7 +7,7 @@ import { AIProvider } from "./context/AIContext.jsx";
 import "./styles/index.css";
 
 async function startApp() {
-  if (import.meta.env.DEV && import.meta.env.VITE_API_MOCKING !== "disabled") {
+  if (import.meta.env.DEV && import.meta.env.VITE_API_MOCKING === "enabled") {
     const { setupMocks } = await import("./mocks/browser.js");
     await setupMocks();
   }

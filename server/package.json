@@ -8,8 +8,11 @@
     "test": "node --test"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "latest",
+    "dotenv": "^18.0.9",
     "express": "latest",
+    "jsonwebtoken": "^9.0.3",
     "socket.io": "latest"
   }
 }

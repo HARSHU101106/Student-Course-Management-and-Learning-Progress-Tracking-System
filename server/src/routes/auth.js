@@ -1,56 +1,72 @@
 import { Router } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
+import {
+  validateLogin,
+  validateRegistration,
+} from "../middleware/authValidation.js";
 import { requireAuth } from "../middleware/auth.js";
+import { loginStudent, registerStudent } from "../services/auth.service.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const router = Router();
 
-router.post("/login", (request, response) => {
-  const { email, password } = request.body || {};
-  if (!email || !password) {
-    return response.status(400).json({ message: "Email and password are required." });
-  }
+router.post(
+  "/register",
+  validateRegistration,
+  asyncHandler(async (request, response) => {
+    const student = await registerStudent(request.body);
+    return response.status(201).json({
+      message: "Student registered successfully",
+      student,
+      user: student,
+    });
+  }),
+);
 
-  const role = email.toLowerCase().startsWith("admin@") ? "admin" : "student";
-  const token = role === "admin" ? "admin-demo-token" : "demo-token";
+router.post(
+  "/login",
+  validateLogin,
+  asyncHandler(async (request, response) => {
+    if (Buffer.byteLength(env.jwtSecret, "utf8") < 32) {
+      throw new ApiError(500, "Authentication is not configured.");
+    }
 
-  return response.json({
-    user: {
-      id: role === "admin" ? "demo-admin" : "demo-student",
-      name: email.split("@")[0].replace(/[._-]/g, " ") || "Student",
-      email,
-      role,
-    },
-    token,
-  });
-});
+    const student = await loginStudent(request.body);
+    const token = jwt.sign(
+      { email: student.email, role: student.role },
+      env.jwtSecret,
+      {
+        subject: student.id,
+        expiresIn: env.jwtExpiresIn,
+        algorithm: "HS256",
+      },
+    );
 
-router.post("/register", (request, response) => {
-  const { name, email, password } = request.body || {};
-  if (!name || !email || !password) {
-    return response.status(400).json({ message: "Name, email, and password are required." });
-  }
+    return response.status(200).json({
+      message: "Login successful",
+      token,
+      tokenType: "Bearer",
+      expiresIn: env.jwtExpiresIn,
+      student,
+      user: student,
+    });
+  }),
+);
 
-  const role = email.toLowerCase().startsWith("admin@") ? "admin" : "student";
-
-  return response.status(201).json({
-    user: {
-      id: "demo-new-user",
-      name,
-      email,
-      role,
-    },
-    token: role === "admin" ? "admin-demo-token" : "demo-token",
-  });
-});
-
-router.get("/me", requireAuth, (request, response) => {
-  return response.json({
-    user: {
-      id: request.user.id,
-      email: request.user.email,
-      role: request.user.role,
-      name: request.user.role === "admin" ? "Demo Admin" : "Demo Student",
-    },
-  });
-});
+router.get(
+  "/me",
+  requireAuth,
+  asyncHandler(async (request, response) => {
+    return response.json({
+      user: {
+        id: request.user.id,
+        email: request.user.email,
+        role: request.user.role,
+      },
+    });
+  }),
+);
 
 export default router;

@@ -118,6 +118,55 @@ async function login(request) {
   });
 }
 
+async function register(request, requireDepartment = false) {
+  const details = await request.json();
+  if (
+    !details.name ||
+    !details.email ||
+    !details.password ||
+    (requireDepartment && !details.department)
+  ) {
+    return HttpResponse.json(
+      {
+        message: requireDepartment
+          ? "Name, email, password, and department are required."
+          : "Name, email, and password are required.",
+      },
+      { status: 400 },
+    );
+  }
+  if (
+    users.some(
+      (user) => user.email.toLowerCase() === details.email.toLowerCase(),
+    )
+  ) {
+    return HttpResponse.json(
+      { message: "An account with this email already exists." },
+      { status: 409 },
+    );
+  }
+
+  const user = {
+    id: `student-${Date.now()}`,
+    name: details.name,
+    email: details.email,
+    department: details.department || "",
+    password: details.password,
+    role: "student",
+  };
+  users.push(user);
+  const publicDetails = publicUser(user);
+  return HttpResponse.json(
+    {
+      message: "Student registered successfully",
+      student: publicDetails,
+      user: publicDetails,
+      token: `mock-${user.id}`,
+    },
+    { status: 201 },
+  );
+}
+
 export const handlers = [
   http.get("/api/courses", () => HttpResponse.json({ items: courses })),
   http.get("/api/courses/:courseId", ({ params }) => {
@@ -138,38 +187,11 @@ export const handlers = [
     }),
   ),
   http.post("/api/auth/login", ({ request }) => login(request)),
-  http.post("/api/auth/register", async ({ request }) => {
-    const details = await request.json();
-    if (!details.name || !details.email || !details.password) {
-      return HttpResponse.json(
-        { message: "Name, email, and password are required." },
-        { status: 400 },
-      );
-    }
-    if (
-      users.some(
-        (user) => user.email.toLowerCase() === details.email.toLowerCase(),
-      )
-    ) {
-      return HttpResponse.json(
-        { message: "An account with this email already exists." },
-        { status: 409 },
-      );
-    }
-
-    const user = {
-      id: `student-${Date.now()}`,
-      name: details.name,
-      email: details.email,
-      password: details.password,
-      role: "student",
-    };
-    users.push(user);
-    return HttpResponse.json(
-      { user: publicUser(user), token: `mock-${user.id}` },
-      { status: 201 },
-    );
-  }),
+  http.post("/api/v1/auth/login", ({ request }) => login(request)),
+  http.post("/api/auth/register", ({ request }) => register(request)),
+  http.post("/api/v1/auth/register", ({ request }) =>
+    register(request, true),
+  ),
   http.get("/api/ai/plan/:courseId", () =>
     HttpResponse.json({ courseId: "youtube-demo-dbms", items: studyPlan }),
   ),
