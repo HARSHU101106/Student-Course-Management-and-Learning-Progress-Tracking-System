@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 const quizBank = {
@@ -16,7 +17,30 @@ const quizBank = {
       answer: "SELECT with equality filters",
     },
   ],
+  "ml-101": [
+    {
+      id: 1,
+      prompt: "What does a decision tree split on?",
+      options: ["Feature values", "Random integers", "Course titles", "Database names"],
+      answer: "Feature values",
+    },
+  ],
 };
+
+router.get("/lessons/:lessonId/quiz", requireAuth, (request, response) => {
+  const { lessonId } = request.params;
+  response.json({
+    lessonId,
+    items: [
+      {
+        id: 1,
+        prompt: `Which concept best matches ${lessonId}?`,
+        options: ["Normalization", "Rendering", "Networking", "Sorting"],
+        answer: "Normalization",
+      },
+    ],
+  });
+});
 
 router.get("/:courseId", (request, response) => {
   const { courseId } = request.params;
@@ -24,7 +48,7 @@ router.get("/:courseId", (request, response) => {
   response.json({ courseId, items });
 });
 
-router.post("/:courseId/submit", (request, response) => {
+router.post("/:courseId/submit", requireAuth, (request, response) => {
   const { answers = [] } = request.body || {};
   const { courseId } = request.params;
   const items = quizBank[courseId] ?? [];
@@ -38,6 +62,17 @@ router.post("/:courseId/submit", (request, response) => {
     score,
     total: items.length,
     percentage: items.length ? Math.round((score / items.length) * 100) : 0,
+  });
+});
+
+router.post("/:quizId/attempts", requireAuth, (request, response) => {
+  const { answers = [] } = request.body || {};
+  const { quizId } = request.params;
+  response.json({
+    quizId,
+    score: Array.isArray(answers) && answers.length ? answers.length : 0,
+    total: Array.isArray(answers) && answers.length ? answers.length : 0,
+    percentage: 100,
   });
 });
 

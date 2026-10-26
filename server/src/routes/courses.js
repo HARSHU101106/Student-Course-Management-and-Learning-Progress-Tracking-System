@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -48,6 +49,57 @@ router.get("/:id", (request, response) => {
     return response.status(404).json({ message: "Course not found." });
   }
   return response.json(course);
+});
+
+router.get("/:id/lessons", (request, response) => {
+  const course = sampleCourses.find((item) => item.id === request.params.id);
+  if (!course) {
+    return response.status(404).json({ message: "Course not found." });
+  }
+
+  return response.json({ items: course.items || [] });
+});
+
+router.post("/", requireAuth, requireRole("admin"), (request, response) => {
+  const { title, description, category } = request.body || {};
+  if (!title || !description || !category) {
+    return response.status(400).json({ message: "Title, description, and category are required." });
+  }
+
+  const course = {
+    id: `course-${Date.now()}`,
+    title,
+    description,
+    category,
+    items: [],
+    lessons: 0,
+    level: "Beginner",
+    duration: "1 week",
+  };
+
+  sampleCourses.push(course);
+  return response.status(201).json(course);
+});
+
+router.put("/:id", requireAuth, requireRole("admin"), (request, response) => {
+  const index = sampleCourses.findIndex((item) => item.id === request.params.id);
+  if (index === -1) {
+    return response.status(404).json({ message: "Course not found." });
+  }
+
+  const course = { ...sampleCourses[index], ...request.body };
+  sampleCourses[index] = course;
+  return response.json(course);
+});
+
+router.delete("/:id", requireAuth, requireRole("admin"), (request, response) => {
+  const index = sampleCourses.findIndex((item) => item.id === request.params.id);
+  if (index === -1) {
+    return response.status(404).json({ message: "Course not found." });
+  }
+
+  const [removed] = sampleCourses.splice(index, 1);
+  return response.json({ deleted: true, course: removed });
 });
 
 export default router;

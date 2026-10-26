@@ -12,4 +12,10 @@ This is a student course management and learning progress tracking system built 
 - `ai-service/`: FastAPI and LangGraph AI service
 - `docs/`: Architecture, API, data model, and evaluation notes
 
+## Tasks 8-10 status
+
+- Task 8: data model scaffolding is in place for users, courses, lessons, progress, quizzes, and topic mastery with the relevant relational fields and indexing guidance documented in `docs/api-spec.md`.
+- Task 9: the Express API includes JWT-style auth guards, protected course/student/lesson/progress/quiz endpoints, and the documented REST routes expected by the project plan.
+- Task 10: the AI service exposes structured planner, tutor, quiz, and studio request models with an explicit LangGraph-style planner flow and guardrails-oriented schema validation.
+
 See `PROJECT_PLAN.md` for the implementation sequence.
