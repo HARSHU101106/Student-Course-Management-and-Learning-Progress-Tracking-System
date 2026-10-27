@@ -2012,3 +2012,122 @@ p {
     justify-content: start;
   }
 }
+
+.course-admin-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 18px;
+}
+.course-editor {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.course-editor h2,
+.course-editor label {
+  margin: 0;
+}
+.course-editor label,
+.progress-update-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.course-editor input,
+.course-editor textarea,
+.progress-update-form input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  background: var(--paper);
+}
+.course-editor textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+.course-editor-actions,
+.course-management-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.course-management-actions {
+  width: 100%;
+}
+.inline-notice {
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--ink);
+  background: var(--mint-soft);
+}
+.student-course-list {
+  display: grid;
+  gap: 14px;
+}
+.student-course-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.student-course-row h2,
+.learning-progress-card h2 {
+  margin: 0;
+}
+.student-course-row p,
+.learning-progress-card p {
+  color: var(--muted);
+}
+.empty-courses {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+.empty-courses h2,
+.empty-courses p {
+  margin: 0;
+}
+.progress-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.summary-card h2 {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.summary-card strong {
+  font-family: var(--font-display);
+  font-size: 2rem;
+}
+.learning-progress-card progress {
+  width: 100%;
+  height: 12px;
+  accent-color: var(--cyan);
+}
+.progress-update-form {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.progress-update-form label {
+  width: min(220px, 100%);
+}
+@media (max-width: 650px) {
+  .student-course-row,
+  .progress-update-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .progress-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

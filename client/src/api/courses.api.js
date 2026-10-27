@@ -17,7 +17,22 @@ export const coursesApi = {
   },
 
   async getMyEnrollments() {
-    const response = await apiClient.get("/enrollments/me");
+    const response = await apiClient.get("/v1/enrollments/my-courses");
+    return response.data;
+  },
+
+  async createCourse(course) {
+    const response = await apiClient.post("/v1/courses", course);
+    return response.data;
+  },
+
+  async updateCourse(courseId, course) {
+    const response = await apiClient.put(`/v1/courses/${courseId}`, course);
+    return response.data;
+  },
+
+  async deleteCourse(courseId) {
+    const response = await apiClient.delete(`/v1/courses/${courseId}`);
     return response.data;
   },
 };

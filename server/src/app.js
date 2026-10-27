@@ -1,4 +1,5 @@
 import express from "express";
+import morgan from "morgan";
 import cors from "./config/cors.js";
 import adminRoutes from "./routes/admin.js";
 import aiRoutes from "./routes/ai.js";
@@ -14,9 +15,22 @@ import studentRoutes from "./routes/students.js";
 const app = express();
 app.use(cors);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 
+app.get("/", (_request, response) => {
+  response.json({
+    message: "Student Course Management API is running",
+  });
+});
 app.get("/health", (_request, response) => response.json({ status: "ok" }));
-app.get("/api/health", (_request, response) => response.json({ status: "ok" }));
+app.get("/api/health", (_request, response) =>
+  response.status(200).json({
+    success: true,
+    message: "Backend is healthy",
+    timestamp: new Date().toISOString(),
+  }),
+);
 
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);
@@ -31,6 +45,8 @@ app.use("/api/students", studentRoutes);
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
+app.use("/api/v1/enrollments", enrollmentRoutes);
+app.use("/api/v1/progress", progressRoutes);
 
 app.use((request, response) => {
   response.status(404).json({ message: `Route not found: ${request.method} ${request.originalUrl}` });

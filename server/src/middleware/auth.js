@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
+import { requireRole } from "./role.js";
 
 export function requireAuth(request, response, next) {
   const authorization = request.get("authorization") || "";
@@ -29,7 +30,9 @@ export function requireAuth(request, response, next) {
 
     request.user = {
       id: claims.sub,
+      sub: claims.sub,
       email: claims.email,
+      name: claims.name,
       role: claims.role || "student",
     };
   } catch {
@@ -38,12 +41,4 @@ export function requireAuth(request, response, next) {
   return next();
 }
 
-export function requireRole(role) {
-  return (request, response, next) => {
-    if (!request.user || request.user.role !== role) {
-      return response.status(403).json({ message: "Access denied." });
-    }
-
-    return next();
-  };
-}
+export { requireRole };

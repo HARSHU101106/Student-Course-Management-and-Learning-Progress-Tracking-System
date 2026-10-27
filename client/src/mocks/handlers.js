@@ -47,6 +47,9 @@ const courses = [
   },
 ];
 
+const enrollments = [];
+const learningProgress = new Map();
+
 const users = [
   {
     id: "student-demo",
@@ -93,8 +96,244 @@ function publicUser(user) {
   return safeUser;
 }
 
+async function createCourse(request) {
+  const denied = authError(request, "admin");
+  if (denied) return denied;
+  const { title, description, category } = await request.json();
+  if (
+    typeof title !== "string" ||
+    typeof description !== "string" ||
+    typeof category !== "string" ||
+    !title.trim() ||
+    !description.trim() ||
+    !category.trim()
+  ) {
+    return HttpResponse.json(
+      { message: "Title, description, and category are required." },
+      { status: 400 },
+    );
+  }
+  const course = {
+    id: `mock-course-${Date.now()}`,
+    title: title.trim(),
+    description: description.trim(),
+    category: category.trim(),
+    items: [],
+    lessons: 0,
+    level: "Beginner",
+    duration: "1 week",
+  };
+  courses.push(course);
+  return HttpResponse.json(course, { status: 201 });
+}
+
+async function updateCourse(request, courseId) {
+  const denied = authError(request, "admin");
+  if (denied) return denied;
+  const index = courses.findIndex((course) => course.id === courseId);
+  if (index < 0) {
+    return HttpResponse.json({ message: "Course not found." }, { status: 404 });
+  }
+  const updates = await request.json();
+  for (const field of ["title", "description", "category"]) {
+    if (
+      field in updates &&
+      (typeof updates[field] !== "string" || !updates[field].trim())
+    ) {
+      return HttpResponse.json(
+        { message: `${field} must be a non-empty string.` },
+        { status: 400 },
+      );
+    }
+  }
+  courses[index] = {
+    ...courses[index],
+    ...Object.fromEntries(
+      Object.entries(updates).map(([field, value]) => [
+        field,
+        typeof value === "string" ? value.trim() : value,
+      ]),
+    ),
+  };
+  return HttpResponse.json(courses[index]);
+}
+
+async function deleteCourse(request, courseId) {
+  const denied = authError(request, "admin");
+  if (denied) return denied;
+  const index = courses.findIndex((course) => course.id === courseId);
+  if (index < 0) {
+    return HttpResponse.json({ message: "Course not found." }, { status: 404 });
+  }
+  const [course] = courses.splice(index, 1);
+  for (let enrollmentIndex = enrollments.length - 1; enrollmentIndex >= 0; enrollmentIndex -= 1) {
+    if (enrollments[enrollmentIndex].courseId === courseId) {
+      learningProgress.delete(
+        `${enrollments[enrollmentIndex].studentId}:${courseId}`,
+      );
+      enrollments.splice(enrollmentIndex, 1);
+    }
+  }
+  return HttpResponse.json({ deleted: true, course });
+}
+
+function listMyEnrollments(request) {
+  const denied = authError(request, "student");
+  if (denied) return denied;
+  const user = userFromRequest(request);
+  const items = enrollments
+    .filter((enrollment) => enrollment.studentId === user.id)
+    .map((enrollment) => ({
+      ...enrollment,
+      course: courses.find((course) => course.id === enrollment.courseId)
+        ? {
+            id: enrollment.courseId,
+            title:
+              courses.find((course) => course.id === enrollment.courseId)
+                .title,
+          }
+        : null,
+    }));
+  return HttpResponse.json({
+    message: "Enrolled courses fetched successfully",
+    student: { id: user.id, name: user.name },
+    totalEnrollments: items.length,
+    enrollments: items,
+    items: items.map((item) => ({
+      courseId: item.courseId,
+      courseTitle: item.course?.title || item.courseTitle,
+      status: item.status,
+      progress: item.progress,
+    })),
+  });
+}
+
+async function enroll(request) {
+  const denied = authError(request, "student");
+  if (denied) return denied;
+  const user = userFromRequest(request);
+  const { courseId } = await request.json();
+  const course = courses.find((item) => item.id === courseId);
+  if (!course) {
+    return HttpResponse.json({ message: "Course not found." }, { status: 404 });
+  }
+  if (
+    enrollments.some(
+      (item) => item.studentId === user.id && item.courseId === courseId,
+    )
+  ) {
+    return HttpResponse.json(
+      { message: "Student is already enrolled in this course." },
+      { status: 409 },
+    );
+  }
+  const enrollment = {
+    id: `enrollment-${Date.now()}-${enrollments.length}`,
+    studentId: user.id,
+    courseId,
+    courseTitle: course.title,
+    status: "active",
+    progress: 0,
+    enrolledAt: new Date().toISOString(),
+  };
+  enrollments.push(enrollment);
+  return HttpResponse.json(
+    { message: "Course enrollment successful", enrollment },
+    { status: 201 },
+  );
+}
+
+async function unenroll(request, courseId) {
+  const denied = authError(request, "student");
+  if (denied) return denied;
+  const user = userFromRequest(request);
+  const index = enrollments.findIndex(
+    (item) => item.studentId === user.id && item.courseId === courseId,
+  );
+  if (index < 0) {
+    return HttpResponse.json(
+      { message: "You are not enrolled in this course." },
+      { status: 404 },
+    );
+  }
+  enrollments.splice(index, 1);
+  learningProgress.delete(`${user.id}:${courseId}`);
+  return HttpResponse.json({ message: "Successfully unenrolled from course." });
+}
+
+async function updateProgress(request) {
+  const denied = authError(request, "student");
+  if (denied) return denied;
+  const user = userFromRequest(request);
+  const { courseId, completedLessons, totalLessons } = await request.json();
+  const enrollment = enrollments.find(
+    (item) => item.studentId === user.id && item.courseId === courseId,
+  );
+  if (!enrollment || enrollment.status !== "active") {
+    return HttpResponse.json(
+      { message: "You must be actively enrolled in this course." },
+      { status: 403 },
+    );
+  }
+  const course = courses.find((item) => item.id === courseId);
+  const expectedLessons = course?.items?.length || course?.lessons || 0;
+  if (
+    !Number.isInteger(completedLessons) ||
+    !Number.isInteger(totalLessons) ||
+    totalLessons !== expectedLessons ||
+    expectedLessons < 1 ||
+    completedLessons < 0 ||
+    completedLessons > totalLessons
+  ) {
+    return HttpResponse.json(
+      { message: "Enter valid completed and total lesson counts." },
+      { status: 400 },
+    );
+  }
+  const progress = {
+    id: `${user.id}:${courseId}`,
+    studentId: user.id,
+    courseId,
+    completedLessons,
+    totalLessons,
+    progressPercentage: Math.round((completedLessons / totalLessons) * 100),
+    updatedAt: new Date().toISOString(),
+  };
+  learningProgress.set(`${user.id}:${courseId}`, progress);
+  enrollment.progress = progress.progressPercentage;
+  if (progress.progressPercentage === 100) enrollment.status = "completed";
+  return HttpResponse.json({
+    message: "Learning progress updated successfully",
+    progress,
+  });
+}
+
 function playlistIdFromUrl(url) {
   return new URL(url).searchParams.get("list") || "adaptlearn-demo";
+}
+
+function userFromRequest(request) {
+  const token = request.headers
+    .get("authorization")
+    ?.replace(/^Bearer\s+/i, "");
+  return users.find((user) => token === `mock-${user.id}`);
+}
+
+function authError(request, requiredRole) {
+  const user = userFromRequest(request);
+  if (!user) {
+    return HttpResponse.json(
+      { message: "Authentication token is required." },
+      { status: 401 },
+    );
+  }
+  if (requiredRole && user.role !== requiredRole) {
+    return HttpResponse.json(
+      { message: "Access denied. Insufficient permissions." },
+      { status: 403 },
+    );
+  }
+  return null;
 }
 
 async function login(request) {
@@ -114,7 +353,10 @@ async function login(request) {
 
   return HttpResponse.json({
     user: publicUser(user),
+    student: publicUser(user),
     token: `mock-${user.id}`,
+    tokenType: "Bearer",
+    expiresIn: "1h",
   });
 }
 
@@ -168,24 +410,80 @@ async function register(request, requireDepartment = false) {
 }
 
 export const handlers = [
-  http.get("/api/courses", () => HttpResponse.json({ items: courses })),
+  http.get("/api/courses", () =>
+    HttpResponse.json({ items: courses, data: courses, count: courses.length }),
+  ),
+  http.get("/api/v1/courses", () =>
+    HttpResponse.json({ items: courses, data: courses, count: courses.length }),
+  ),
   http.get("/api/courses/:courseId", ({ params }) => {
     const course = courses.find((item) => item.id === params.courseId);
     return course
       ? HttpResponse.json(course)
       : HttpResponse.json({ message: "Course not found." }, { status: 404 });
   }),
-  http.get("/api/enrollments/me", () =>
-    HttpResponse.json({
-      student: { id: "student-demo", name: "Alex Student" },
-      items: courses.map((course, index) => ({
-        courseId: course.id,
-        courseTitle: course.title,
-        status: index === 0 ? "active" : "enrolled",
-        progress: 0,
-      })),
-    }),
+  http.get("/api/v1/courses/:courseId", ({ params }) => {
+    const course = courses.find((item) => item.id === params.courseId);
+    return course
+      ? HttpResponse.json(course)
+      : HttpResponse.json({ message: "Course not found." }, { status: 404 });
+  }),
+  http.post("/api/courses", ({ request }) => createCourse(request)),
+  http.post("/api/v1/courses", ({ request }) => createCourse(request)),
+  http.put("/api/courses/:courseId", ({ request, params }) =>
+    updateCourse(request, params.courseId),
   ),
+  http.put("/api/v1/courses/:courseId", ({ request, params }) =>
+    updateCourse(request, params.courseId),
+  ),
+  http.delete("/api/courses/:courseId", ({ request, params }) =>
+    deleteCourse(request, params.courseId),
+  ),
+  http.delete("/api/v1/courses/:courseId", ({ request, params }) =>
+    deleteCourse(request, params.courseId),
+  ),
+  http.get("/api/v1/enrollments/my-courses", ({ request }) =>
+    listMyEnrollments(request),
+  ),
+  http.get("/api/v1/enrollments/me", ({ request }) =>
+    listMyEnrollments(request),
+  ),
+  http.post("/api/v1/enrollments", ({ request }) => enroll(request)),
+  http.delete("/api/v1/enrollments/:courseId", ({ request, params }) =>
+    unenroll(request, params.courseId),
+  ),
+  http.get("/api/v1/progress/my-progress", ({ request }) => {
+    const denied = authError(request, "student");
+    if (denied) return denied;
+    const user = userFromRequest(request);
+    const progress = enrollments
+      .filter((item) => item.studentId === user.id)
+      .map((enrollment) => {
+        const course = courses.find((item) => item.id === enrollment.courseId);
+        const saved = learningProgress.get(`${user.id}:${enrollment.courseId}`);
+        return course
+          ? {
+              ...(saved || {
+                id: null,
+                studentId: user.id,
+                courseId: enrollment.courseId,
+                completedLessons: 0,
+                totalLessons: course.items?.length || course.lessons || 0,
+                progressPercentage: 0,
+              }),
+              course: { id: course.id, title: course.title },
+              status: enrollment.status,
+            }
+          : null;
+      })
+      .filter(Boolean);
+    return HttpResponse.json({
+      message: "Learning progress fetched successfully",
+      totalCourses: progress.length,
+      progress,
+    });
+  }),
+  http.put("/api/v1/progress", ({ request }) => updateProgress(request)),
   http.post("/api/auth/login", ({ request }) => login(request)),
   http.post("/api/v1/auth/login", ({ request }) => login(request)),
   http.post("/api/auth/register", ({ request }) => register(request)),

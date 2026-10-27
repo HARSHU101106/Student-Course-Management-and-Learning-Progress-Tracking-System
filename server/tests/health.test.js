@@ -22,6 +22,27 @@ test("GET /health returns a healthy status", async () => {
   });
 });
 
+test("GET /api/health returns the backend health payload", async () => {
+  await withServer(async (port) => {
+    const response = await fetch(`http://127.0.0.1:${port}/api/health`);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.success, true);
+    assert.equal(body.message, "Backend is healthy");
+    assert.ok(Number.isFinite(Date.parse(body.timestamp)));
+  });
+});
+
+test("GET / returns the service status message", async () => {
+  await withServer(async (port) => {
+    const response = await fetch(`http://127.0.0.1:${port}/`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+      message: "Student Course Management API is running",
+    });
+  });
+});
+
 test("GET /api/courses returns available course metadata", async () => {
   await withServer(async (port) => {
     const response = await fetch(`http://127.0.0.1:${port}/api/courses`);

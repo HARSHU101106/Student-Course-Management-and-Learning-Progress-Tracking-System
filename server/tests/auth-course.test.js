@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 process.env.JWT_SECRET ||= "test-secret-with-at-least-thirty-two-bytes";
 
 const { default: app } = await import("../src/app.js");
+const { createAdminAccount } = await import("../src/services/auth.service.js");
 
 async function withServer(testFn) {
   const server = app.listen(0);
@@ -67,6 +68,7 @@ test("registration, login, JWT protection, and course CRUD work end to end", asy
     const tokenClaims = jwt.decode(login.token);
     assert.equal(tokenClaims.sub, registered.student.id);
     assert.equal(tokenClaims.email, email);
+    assert.equal(tokenClaims.role, "student");
     assert.equal("password" in tokenClaims, false);
     assert.equal("passwordHash" in tokenClaims, false);
 
@@ -132,14 +134,53 @@ test("registration, login, JWT protection, and course CRUD work end to end", asy
       headers: authHeaders,
       body: JSON.stringify(coursePayload),
     });
-    assert.equal(createResponse.status, 201);
-    const course = await createResponse.json();
+    assert.equal(createResponse.status, 403);
+
+    const adminEmail = `admin-${randomUUID()}@example.com`;
+    const adminPassword = "a-strong-admin-password-123";
+    await createAdminAccount({ email: adminEmail, password: adminPassword });
+    const adminLoginResponse = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+    });
+    assert.equal(adminLoginResponse.status, 200);
+    const adminLogin = await adminLoginResponse.json();
+    assert.equal(adminLogin.student.role, "admin");
+    assert.equal(jwt.decode(adminLogin.token).role, "admin");
+    const adminHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${adminLogin.token}`,
+    };
+
+    const courseUpdateByStudent = await fetch(
+      `${baseUrl}/api/v1/courses/${courseList.items[0].id}`,
+      {
+        method: "PUT",
+        headers: authHeaders,
+        body: JSON.stringify({ title: "Student update" }),
+      },
+    );
+    assert.equal(courseUpdateByStudent.status, 403);
+    const courseDeleteByStudent = await fetch(
+      `${baseUrl}/api/v1/courses/${courseList.items[0].id}`,
+      { method: "DELETE", headers: authHeaders },
+    );
+    assert.equal(courseDeleteByStudent.status, 403);
+
+    const adminCreateResponse = await fetch(`${baseUrl}/api/v1/courses`, {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify(coursePayload),
+    });
+    assert.equal(adminCreateResponse.status, 201);
+    const course = await adminCreateResponse.json();
 
     const updateResponse = await fetch(
       `${baseUrl}/api/v1/courses/${course.id}`,
       {
         method: "PUT",
-        headers: authHeaders,
+        headers: adminHeaders,
         body: JSON.stringify({ title: "Updated test course" }),
       },
     );
@@ -148,7 +189,7 @@ test("registration, login, JWT protection, and course CRUD work end to end", asy
 
     const deleteResponse = await fetch(
       `${baseUrl}/api/v1/courses/${course.id}`,
-      { method: "DELETE", headers: authHeaders },
+      { method: "DELETE", headers: adminHeaders },
     );
     assert.equal(deleteResponse.status, 200);
     assert.equal((await deleteResponse.json()).deleted, true);

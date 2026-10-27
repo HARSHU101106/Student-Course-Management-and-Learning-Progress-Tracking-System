@@ -35,7 +35,7 @@ router.post(
 
     const student = await loginStudent(request.body);
     const token = jwt.sign(
-      { email: student.email, role: student.role },
+      { email: student.email, name: student.name, role: student.role },
       env.jwtSecret,
       {
         subject: student.id,

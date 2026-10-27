@@ -29,12 +29,14 @@ Authentication and course routes are available under `/api/v1` as specified in t
 - `POST /api/v1/auth/register`: validates name, email, password, and department; stores a bcrypt password hash; returns a safe student object. Duplicate email returns `409`.
 - `POST /api/v1/auth/login`: compares the submitted password with its hash and returns a signed JWT, `tokenType`, `expiresIn`, and safe student object. Invalid credentials return `401`.
 - `GET /api/v1/courses` and `GET /api/v1/courses/:id`: public course browsing.
-- `POST /api/v1/courses`, `PUT /api/v1/courses/:id`, and `DELETE /api/v1/courses/:id`: require a valid JWT; requests without a token or with an invalid/expired token return `401`.
+- `POST /api/v1/courses`, `PUT /api/v1/courses/:id`, and `DELETE /api/v1/courses/:id`: require a valid admin JWT; missing/invalid tokens return `401`, and student tokens return `403`.
 - The Axios client reads the token from `sessionStorage` and attaches it as a Bearer token. Logging out removes it.
 
 Set `JWT_SECRET` to a unique secret of at least 32 random bytes and configure `JWT_EXPIRES_IN` before starting the API. See `server/.env.example`; never commit a real `.env` file or secret.
 
-Student accounts and course changes currently use in-memory arrays to match the task's stated learning-stage implementation. They are lost when the server restarts; replace these stores with database models before deployment.
+Admin accounts are provisioned from `ADMIN_EMAIL` and `ADMIN_PASSWORD` at server startup. Public registration always creates a student.
+
+Student/admin accounts, courses, enrollments, and learning progress currently use in-memory stores for this learning-stage implementation. They are lost when the server restarts; replace these stores with database models before deployment.
 
 ## Core routes
 
@@ -48,6 +50,10 @@ Student accounts and course changes currently use in-memory arrays to match the 
 - `GET /api/courses/:id/lessons`
 - `POST /api/enrollments`
 - `GET /api/enrollments/me`
+- `GET /api/v1/enrollments/my-courses`
+- `DELETE /api/v1/enrollments/:courseId`
+- `PUT /api/v1/progress`
+- `GET /api/v1/progress/my-progress`
 - `POST /api/progress/watch`
 - `POST /api/progress/lessons/:id/complete`
 - `GET /api/progress/me`
@@ -60,7 +66,7 @@ Student accounts and course changes currently use in-memory arrays to match the 
 - `GET /api/notifications`
 - `PATCH /api/notifications/:id/read`
 
-The `/api/v1/auth/*` and `/api/v1/courses*` routes expose the Task 9/10 API prefix.
+The `/api/v1/auth/*`, `/api/v1/courses*`, `/api/v1/enrollments*`, and `/api/v1/progress*` routes expose the versioned task API. Course reads are public; course mutations require an admin token; enrollment and progress routes are student-only.
 
 ## AI design summary
 

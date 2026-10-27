@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Route, Routes, useLocation, useParams } from "react-router-dom";
 import { importYouTubePlaylist } from "./api/ai.api.js";
 import { authApi } from "./api/auth.api.js";
+import { studentApi } from "./api/student.api.js";
 import { CourseContext } from "./context/CourseContext.jsx";
 import { AIContext } from "./context/AIContext.jsx";
 import AdminRoute from "./routes/AdminRoute.jsx";
@@ -10,6 +11,8 @@ import LessonPage from "./pages/Lesson.jsx";
 import CourseCard from "./components/courses/CourseCard.jsx";
 import Footer from "./components/layout/Footer.jsx";
 import Navbar from "./components/layout/Navbar.jsx";
+import MyCourses from "./pages/MyCourses.jsx";
+import LearningProgress from "./pages/LearningProgress.jsx";
 
 const initialNotifications = [
   {
@@ -119,9 +122,13 @@ function App() {
   const {
     publishedCourses,
     setPublishedCourses,
+    createCourse,
+    updateCourse,
+    deleteCourse,
     enrollmentData,
     loading: coursesLoading,
     error: coursesError,
+    refreshEnrollments,
   } = useContext(CourseContext);
   const [user, setUser] = useState(getStoredUser);
   const [theme, setTheme] = useState(
@@ -163,9 +170,11 @@ function App() {
         ...authenticatedUser,
         role: authenticatedUser?.role || "student",
       };
+      sessionStorage.setItem("role", nextUser.role);
 
       setUser(nextUser);
       localStorage.setItem("adaptlearn-user", JSON.stringify(nextUser));
+      if (nextUser.role === "student") await refreshEnrollments();
       go(nextUser.role === "admin" ? "/admin" : "/dashboard");
     } catch (error) {
       const message = error?.response?.data?.message || "Unable to sign in.";
@@ -175,7 +184,9 @@ function App() {
   const logout = () => {
     setUser(null);
     sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
     localStorage.removeItem("adaptlearn-user");
+    void refreshEnrollments();
     go("/");
   };
   const toggleTheme = () => {
@@ -265,9 +276,13 @@ function App() {
           setNotifications={setNotifications}
           publishedCourses={publishedCourses}
           setPublishedCourses={setPublishedCourses}
+          createCourse={createCourse}
+          updateCourse={updateCourse}
+          deleteCourse={deleteCourse}
           enrollmentData={enrollmentData}
           coursesLoading={coursesLoading}
           coursesError={coursesError}
+          refreshEnrollments={refreshEnrollments}
         />
       </main>
       <Footer />
@@ -282,6 +297,10 @@ function Router({
   setNotifications,
   publishedCourses,
   setPublishedCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+  refreshEnrollments,
   enrollmentData,
   coursesLoading,
   coursesError,
@@ -294,21 +313,28 @@ function Router({
         path="/register"
         element={<Auth mode="register" onSubmit={login} />}
       />
+      <Route
+        path="/courses"
+        element={
+          coursesLoading ? (
+            <p className="page-width page-section">Loading courses...</p>
+          ) : coursesError ? (
+            <p className="page-width page-section" role="alert">
+              {coursesError}
+            </p>
+          ) : (
+            <Courses
+              user={user}
+              publishedCourses={publishedCourses}
+              createCourse={createCourse}
+              updateCourse={updateCourse}
+              deleteCourse={deleteCourse}
+              refreshEnrollments={refreshEnrollments}
+            />
+          )
+        }
+      />
       <Route element={<ProtectedRoute user={user} />}>
-        <Route
-          path="/courses"
-          element={
-            coursesLoading ? (
-              <p className="page-width page-section">Loading courses...</p>
-            ) : coursesError ? (
-              <p className="page-width page-section" role="alert">
-                {coursesError}
-              </p>
-            ) : (
-              <Courses user={user} publishedCourses={publishedCourses} />
-            )
-          }
-        />
         <Route
           path="/course/:courseId"
           element={<CoursePathRoute publishedCourses={publishedCourses} />}
@@ -325,6 +351,16 @@ function Router({
           }
         />
         <Route path="/plan" element={<StudyPlan />} />
+        <Route
+          path="/my-courses"
+          element={user?.role === "student" ? <MyCourses /> : <EmptyState />}
+        />
+        <Route
+          path="/progress"
+          element={
+            user?.role === "student" ? <LearningProgress /> : <EmptyState />
+          }
+        />
         <Route
           path="/notifications"
           element={
@@ -641,9 +677,21 @@ function Auth({ mode, onSubmit }) {
   );
 }
 
-function Courses({ user, publishedCourses = [] }) {
+function Courses({
+  user,
+  publishedCourses = [],
+  createCourse,
+  updateCourse,
+  deleteCourse: deleteCourseRecord,
+  refreshEnrollments,
+}) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState(new Set());
+  const [courseDraft, setCourseDraft] = useState(null);
+  const [notice, setNotice] = useState("");
+  const [requestError, setRequestError] = useState("");
+  const [saving, setSaving] = useState(false);
   const allCourses = publishedCourses;
   const categories = ["All"];
   const filtered = allCourses.filter(
@@ -653,12 +701,168 @@ function Courses({ user, publishedCourses = [] }) {
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
+
+  useEffect(() => {
+    let active = true;
+    if (user?.role !== "student") {
+      setEnrolledCourseIds(new Set());
+      return () => {
+        active = false;
+      };
+    }
+
+    studentApi
+      .getMyCourses()
+      .then((enrollments) => {
+        if (active) {
+          setEnrolledCourseIds(
+            new Set(enrollments.map((item) => item.courseId)),
+          );
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setRequestError(
+            error.response?.data?.message ||
+              "Unable to load your enrollments.",
+          );
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id, user?.role]);
+
+  const handleEnroll = async (courseId) => {
+    setRequestError("");
+    setNotice("");
+    try {
+      const result = await studentApi.enroll(courseId);
+      setEnrolledCourseIds((current) => new Set(current).add(courseId));
+      setNotice(result.message || "Enrollment successful.");
+      await refreshEnrollments();
+    } catch (error) {
+      setRequestError(
+        error.response?.data?.message || "Unable to enroll in this course.",
+      );
+    }
+  };
+
+  const saveCourse = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setRequestError("");
+    setNotice("");
+    try {
+      const payload = {
+        title: courseDraft.title.trim(),
+        description: courseDraft.description.trim(),
+        category: courseDraft.category.trim(),
+      };
+      if (courseDraft.id) {
+        await updateCourse(courseDraft.id, payload);
+      } else {
+        await createCourse(payload);
+      }
+      setCourseDraft(null);
+      setNotice(courseDraft.id ? "Course updated." : "Course created.");
+    } catch (error) {
+      setRequestError(
+        error.response?.data?.message || "Unable to save the course.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteCourse = async (course) => {
+    if (!window.confirm(`Delete "${course.title}"?`)) return;
+    setRequestError("");
+    setNotice("");
+    try {
+      await deleteCourseRecord(course.id);
+      setNotice("Course deleted.");
+    } catch (error) {
+      setRequestError(
+        error.response?.data?.message || "Unable to delete the course.",
+      );
+    }
+  };
+
   return (
     <div className="page-width page-section">
       <PageIntro eyebrow="Course library" title="Choose your next challenge">
         NPTEL lectures, organized into clear modules with quizzes that keep the
         path honest.
       </PageIntro>
+      {user?.role === "admin" && (
+        <div className="course-admin-toolbar">
+          <Button
+            onClick={() =>
+              setCourseDraft({ title: "", description: "", category: "" })
+            }
+          >
+            Add course
+          </Button>
+        </div>
+      )}
+      {courseDraft && (
+        <form className="course-editor panel" onSubmit={saveCourse}>
+          <h2>{courseDraft.id ? "Edit course" : "Add course"}</h2>
+          <label>
+            Title
+            <input
+              required
+              value={courseDraft.title}
+              onChange={(event) =>
+                setCourseDraft({ ...courseDraft, title: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            Description
+            <textarea
+              required
+              value={courseDraft.description}
+              onChange={(event) =>
+                setCourseDraft({
+                  ...courseDraft,
+                  description: event.target.value,
+                })
+              }
+            />
+          </label>
+          <label>
+            Category
+            <input
+              required
+              value={courseDraft.category}
+              onChange={(event) =>
+                setCourseDraft({ ...courseDraft, category: event.target.value })
+              }
+            />
+          </label>
+          <div className="course-editor-actions">
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Save course"}
+            </Button>
+            <Button variant="quiet" onClick={() => setCourseDraft(null)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
+      {notice && (
+        <p className="inline-notice" role="status">
+          {notice}
+        </p>
+      )}
+      {requestError && (
+        <p className="workflow-error" role="alert">
+          {requestError}
+        </p>
+      )}
       <div className="toolbar">
         <label className="search-field">
           <Icon name="search" />
@@ -688,6 +892,10 @@ function Courses({ user, publishedCourses = [] }) {
             course={course}
             index={index}
             user={user}
+            isEnrolled={enrolledCourseIds.has(course.id)}
+            onEnroll={handleEnroll}
+            onEdit={(item) => setCourseDraft({ ...item })}
+            onDelete={deleteCourse}
           />
         ))}
       </div>

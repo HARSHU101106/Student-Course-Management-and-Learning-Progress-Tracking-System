@@ -15,6 +15,8 @@ export default function Navbar({
       : [
           ["/dashboard", "Dashboard", "home"],
           ["/courses", "Courses", "book"],
+          ["/my-courses", "My courses", "book"],
+          ["/progress", "Progress", "plan"],
           ["/plan", "My plan", "plan"],
         ]
     : [

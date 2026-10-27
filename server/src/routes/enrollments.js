@@ -1,59 +1,117 @@
+import { randomUUID } from "node:crypto";
 import { Router } from "express";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { enrollments, learningProgress } from "../data/learning.js";
+import { findCourseById } from "./courses.js";
 
 const router = Router();
+const requireStudent = [requireAuth, requireRole("student")];
 
-const enrollments = [
-  {
-    id: "en-1",
-    courseId: "dbms-101",
-    studentId: "stu-1",
-    courseTitle: "Database Management Systems",
-    status: "active",
-    progress: 0,
-  },
-  {
-    id: "en-2",
-    courseId: "ml-101",
-    studentId: "stu-1",
-    courseTitle: "Introduction to Machine Learning",
-    status: "enrolled",
-    progress: 0,
-  },
-];
+function getStudentEnrollments(studentId) {
+  return enrollments.filter((item) => item.studentId === studentId);
+}
 
-router.get("/me", (_request, response) => {
-  response.json({
-    student: { id: "stu-1", name: "Ravi K." },
-    items: enrollments,
+router.get("/my-courses", ...requireStudent, (request, response) => {
+  const studentEnrollments = getStudentEnrollments(request.user.id)
+    .map((enrollment) => {
+      const course = findCourseById(enrollment.courseId);
+      return {
+        ...enrollment,
+        course: course ? { id: course.id, title: course.title } : null,
+      };
+    })
+    .sort((left, right) => right.enrolledAt.localeCompare(left.enrolledAt));
+
+  return response.json({
+    message: "Enrolled courses fetched successfully",
+    student: {
+      id: request.user.id,
+      name: request.user.name || request.user.email,
+    },
+    totalEnrollments: studentEnrollments.length,
+    enrollments: studentEnrollments,
+    items: studentEnrollments.map((item) => ({
+      courseId: item.courseId,
+      courseTitle: item.course?.title || item.courseTitle,
+      status: item.status,
+      progress: item.progress,
+    })),
   });
 });
 
-router.get("/", (_request, response) => {
-  response.json({ items: enrollments });
+router.get("/me", ...requireStudent, (request, response) => {
+  const studentEnrollments = getStudentEnrollments(request.user.id);
+  return response.json({
+    student: {
+      id: request.user.id,
+      name: request.user.name || request.user.email,
+    },
+    items: studentEnrollments.map((item) => ({
+      courseId: item.courseId,
+      courseTitle: findCourseById(item.courseId)?.title || item.courseTitle,
+      status: item.status,
+      progress: item.progress,
+    })),
+  });
 });
 
-router.post("/", (request, response) => {
-  const { courseId, studentId, courseTitle } = request.body || {};
-  if (!courseId) {
+router.get("/", requireAuth, requireRole("admin"), (_request, response) => {
+  return response.json({ items: enrollments });
+});
+
+router.post("/", ...requireStudent, (request, response) => {
+  const { courseId } = request.body || {};
+  if (typeof courseId !== "string" || !courseId.trim()) {
     return response.status(400).json({ message: "Course ID is required." });
   }
 
-  const existing = enrollments.find((item) => item.courseId === courseId && item.studentId === (studentId || "stu-1"));
+  const course = findCourseById(courseId.trim());
+  if (!course) {
+    return response.status(404).json({ message: "Course not found." });
+  }
+
+  const existing = enrollments.find(
+    (item) =>
+      item.courseId === course.id && item.studentId === request.user.id,
+  );
   if (existing) {
-    return response.status(409).json({ message: "Student is already enrolled in this course." });
+    return response.status(409).json({
+      message: "Student is already enrolled in this course.",
+    });
   }
 
   const enrollment = {
-    id: `en-${Date.now()}`,
-    courseId,
-    studentId: studentId || "stu-1",
-    courseTitle: courseTitle || "Imported course",
-    status: "enrolled",
+    id: randomUUID(),
+    courseId: course.id,
+    studentId: request.user.id,
+    courseTitle: course.title,
+    status: "active",
     progress: 0,
+    enrolledAt: new Date().toISOString(),
   };
-
   enrollments.push(enrollment);
-  return response.status(201).json(enrollment);
+
+  return response.status(201).json({
+    message: "Course enrollment successful",
+    enrollment,
+  });
+});
+
+router.delete("/:courseId", ...requireStudent, (request, response) => {
+  const index = enrollments.findIndex(
+    (item) =>
+      item.courseId === request.params.courseId &&
+      item.studentId === request.user.id,
+  );
+  if (index === -1) {
+    return response.status(404).json({
+      message: "You are not enrolled in this course.",
+    });
+  }
+
+  const [removed] = enrollments.splice(index, 1);
+  learningProgress.delete(`${request.user.id}:${removed.courseId}`);
+  return response.json({ message: "Successfully unenrolled from course." });
 });
 
 export default router;

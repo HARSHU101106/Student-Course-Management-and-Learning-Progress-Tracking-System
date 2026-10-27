@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { randomUUID } from "node:crypto";
+import { enrollments, learningProgress } from "../data/learning.js";
 
 const router = Router();
 
@@ -40,8 +41,23 @@ const sampleCourses = [
   },
 ];
 
+export function findCourseById(courseId) {
+  return sampleCourses.find((item) => item.id === courseId);
+}
+
+export function findCourseContainingLesson(lessonId) {
+  return sampleCourses.find((course) =>
+    course.items?.some((lesson) => lesson.id === lessonId),
+  );
+}
+
 router.get("/", (_request, response) => {
-  response.json({ items: sampleCourses });
+  response.json({
+    success: true,
+    count: sampleCourses.length,
+    data: sampleCourses,
+    items: sampleCourses,
+  });
 });
 
 router.get("/:id", (request, response) => {
@@ -61,7 +77,7 @@ router.get("/:id/lessons", (request, response) => {
   return response.json({ items: course.items || [] });
 });
 
-router.post("/", requireAuth, (request, response) => {
+router.post("/", requireAuth, requireRole("admin"), (request, response) => {
   const { title, description, category } = request.body || {};
   if (
     typeof title !== "string" ||
@@ -89,7 +105,7 @@ router.post("/", requireAuth, (request, response) => {
   return response.status(201).json(course);
 });
 
-router.put("/:id", requireAuth, (request, response) => {
+router.put("/:id", requireAuth, requireRole("admin"), (request, response) => {
   const index = sampleCourses.findIndex((item) => item.id === request.params.id);
   if (index === -1) {
     return response.status(404).json({ message: "Course not found." });
@@ -118,19 +134,40 @@ router.put("/:id", requireAuth, (request, response) => {
     }
     if (field in updates) updates[field] = updates[field].trim();
   }
+  for (const field of ["level", "duration", "accent"]) {
+    if (field in updates && typeof updates[field] !== "string") {
+      return response.status(400).json({ message: `${field} must be a string.` });
+    }
+  }
+  if (
+    "lessons" in updates &&
+    (!Number.isInteger(updates.lessons) || updates.lessons < 0)
+  ) {
+    return response.status(400).json({
+      message: "lessons must be a non-negative integer.",
+    });
+  }
 
   const course = { ...sampleCourses[index], ...updates };
   sampleCourses[index] = course;
   return response.json(course);
 });
 
-router.delete("/:id", requireAuth, (request, response) => {
+router.delete("/:id", requireAuth, requireRole("admin"), (request, response) => {
   const index = sampleCourses.findIndex((item) => item.id === request.params.id);
   if (index === -1) {
     return response.status(404).json({ message: "Course not found." });
   }
 
   const [removed] = sampleCourses.splice(index, 1);
+  for (let enrollmentIndex = enrollments.length - 1; enrollmentIndex >= 0; enrollmentIndex -= 1) {
+    if (enrollments[enrollmentIndex].courseId === removed.id) {
+      enrollments.splice(enrollmentIndex, 1);
+    }
+  }
+  for (const key of learningProgress.keys()) {
+    if (key.endsWith(`:${removed.id}`)) learningProgress.delete(key);
+  }
   return response.json({ deleted: true, course: removed });
 });
 

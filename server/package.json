@@ -13,6 +13,7 @@
     "dotenv": "^18.0.9",
     "express": "latest",
     "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.12.1",
     "socket.io": "latest"
   }
 }

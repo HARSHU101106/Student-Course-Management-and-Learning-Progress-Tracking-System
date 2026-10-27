@@ -1,4 +1,12 @@
-export default function CourseCard({ course, index = 0 }) {
+export default function CourseCard({
+  course,
+  index = 0,
+  user,
+  isEnrolled = false,
+  onEnroll,
+  onEdit,
+  onDelete,
+}) {
   const imported = Boolean(course.playlistId);
   return (
     <article className={`course-card accent-${course.accent || "cyan"}`}>
@@ -26,6 +34,31 @@ export default function CourseCard({ course, index = 0 }) {
             </a>
           ) : (
             <span className="muted-label">Awaiting published content</span>
+          )}
+          {user?.role === "student" && (
+            <button
+              className="button button-secondary button-small"
+              onClick={() => onEnroll(course.id)}
+              disabled={isEnrolled}
+            >
+              {isEnrolled ? "Enrolled" : "Enroll now"}
+            </button>
+          )}
+          {user?.role === "admin" && (
+            <div className="course-management-actions">
+              <button
+                className="button button-secondary button-small"
+                onClick={() => onEdit(course)}
+              >
+                Edit
+              </button>
+              <button
+                className="button button-quiet button-small"
+                onClick={() => onDelete(course)}
+              >
+                Delete
+              </button>
+            </div>
           )}
         </div>
       </div>

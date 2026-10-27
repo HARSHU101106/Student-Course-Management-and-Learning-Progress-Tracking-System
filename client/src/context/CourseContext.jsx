@@ -24,11 +24,10 @@ export function CourseProvider({ children }) {
 
   useEffect(() => {
     let active = true;
-    Promise.all([coursesApi.getCourses(), coursesApi.getMyEnrollments()])
-      .then(([items, enrollments]) => {
+    coursesApi.getCourses()
+      .then((items) => {
         if (!active) return;
         setCourses(items);
-        setEnrollmentData(enrollments);
       })
       .catch((requestError) => {
         if (active) setError(requestError.message || "Unable to load courses.");
@@ -42,6 +41,34 @@ export function CourseProvider({ children }) {
     };
   }, []);
 
+  const refreshEnrollments = async () => {
+    if (!sessionStorage.getItem("token")) {
+      setEnrollmentData({ student: null, items: [] });
+      return;
+    }
+
+    try {
+      const data = await coursesApi.getMyEnrollments();
+      setEnrollmentData({
+        student: data.student || null,
+        items: data.items || [],
+        error: "",
+      });
+    } catch (requestError) {
+      setEnrollmentData({
+        student: null,
+        items: [],
+        error:
+          requestError.response?.data?.message ||
+          "Unable to load your enrollments.",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (sessionStorage.getItem("token")) void refreshEnrollments();
+  }, []);
+
   const updateCourses = (update) => {
     setCourses((current) => {
       const next = typeof update === "function" ? update(current) : update;
@@ -53,14 +80,38 @@ export function CourseProvider({ children }) {
     });
   };
 
+  const createCourse = async (course) => {
+    const savedCourse = await coursesApi.createCourse(course);
+    updateCourses((current) => [...current, savedCourse]);
+    return savedCourse;
+  };
+
+  const updateCourse = async (courseId, course) => {
+    const savedCourse = await coursesApi.updateCourse(courseId, course);
+    updateCourses((current) =>
+      current.map((item) => (item.id === savedCourse.id ? savedCourse : item)),
+    );
+    return savedCourse;
+  };
+
+  const deleteCourse = async (courseId) => {
+    const result = await coursesApi.deleteCourse(courseId);
+    updateCourses((current) => current.filter((item) => item.id !== courseId));
+    return result;
+  };
+
   return (
     <CourseContext.Provider
       value={{
         publishedCourses,
         setPublishedCourses: updateCourses,
+        createCourse,
+        updateCourse,
+        deleteCourse,
         enrollmentData,
         loading,
         error,
+        refreshEnrollments,
       }}
     >
       {children}
