@@ -1,0 +1,12 @@
+flowchart TD
+  S([Student question]) --> A[guard<br/>sanitise, redact PII, detect injection]
+  A -->|blocked| B[refuse<br/>refused = true]
+  A -->|ok| C[retrieve<br/>TF-IDF over the course index<br/>retry follow-ups with the previous turn]
+  C -->|no passage above threshold| D[no_answer<br/>grounded = false, suggest closest lessons]
+  C -->|passages found| E[generate<br/>LLM if configured, else extractive]
+  E -->|model says INSUFFICIENT_CONTEXT| D
+  E --> F[verify<br/>drop unsupported sentences, fall back to extractive]
+  F --> G([Answer with citations<br/>grounded = true])
+  B --> Z([End])
+  D --> Z
+  G --> Z

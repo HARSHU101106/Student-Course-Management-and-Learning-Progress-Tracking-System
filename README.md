@@ -1,35 +1,108 @@
-# AdaptLearn
+# AdaptLearn: Student Course Management and Learning Portal
 
-Adaptive learning platform workspace containing the static frontend, React client, Express API server, and FastAPI AI service.
+A full-stack learning platform: students enrol in video courses, track progress, take graded quizzes, get an **adaptive study plan**, ask an **AI tutor that only answers from the course material**, and chat live with classmates. Administrators manage courses, lessons, students and quizzes, import YouTube playlists, and see which students need help.
 
-This is a student course management and learning progress tracking system built with HTML, CSS, JavaScript, React, Node.js, Express, JWT, bcrypt, and Socket.IO. MongoDB is part of the planned deployment stack; the current learning-stage API uses in-memory stores. The workspace also includes the AI service, API collection, and deployment configuration.
+| Layer | Technology |
+|---|---|
+| Web client | React 19, React Router 7, Vite 8, Socket.IO client, three-layer design tokens (light/dark, WCAG AA) |
+| API | Node 22, Express 5, Mongoose 9 (MongoDB), JWT, bcrypt, zod, helmet, Socket.IO 4 |
+| AI service | Python 3.12, FastAPI, **LangGraph**, TF-IDF retrieval, guardrails, optional OpenAI/Azure OpenAI |
+| Database | MongoDB 7 (Atlas in production) |
+| Quality | 204 automated tests, 39 real-browser steps, 78-request Postman/Newman run, CI on GitHub Actions |
 
-## Workspace layout
+![Student dashboard](docs/screenshots/07-dashboard.png)
 
-- `frontend-static/`: Tasks 2-5 static HTML/CSS/JS deliverable
-- `client/`: React/Vite client for Tasks 6-7+
-- `server/`: Express API and Socket.IO services
-- `ai-service/`: FastAPI and LangGraph AI service
-- `docs/`: Architecture, API, data model, and evaluation notes
+## Features
 
-## Tasks 8-13 status
+**Students:** register/sign in, browse and search courses, enrol/unenrol, watch lessons (YouTube) with notes and resume, mark progress, take quizzes graded on the server, see a study plan that revisits weak topics first, ask the AI tutor (answers cite their lesson, off-topic questions are declined), course chat rooms and direct messages, instant notifications, light/dark theme.
 
-- Task 8: the planned data model and index guidance are documented in `docs/api-spec.md`; database-backed model persistence remains a deployment follow-up.
-- Task 9: student registration and login validate inputs, hash passwords with bcrypt, reject duplicate emails, and expose the course CRUD API at `/api/v1/courses`.
-- Task 10: successful login issues an expiring JWT; middleware verifies it on protected routes while course listing and detail reads remain public. The Axios client attaches and clears the session token.
-- Task 11: student registration assigns the student role; an admin can be provisioned from `ADMIN_EMAIL` and `ADMIN_PASSWORD`; course create/update/delete require an admin JWT.
-- Task 12: students can enroll, view their own enrollments, and unenroll through authenticated, student-only routes.
-- Task 13: students can update and view lesson progress for enrolled courses; invalid counts are rejected and 100% progress completes the enrollment.
-- AI-service scaffolding: structured planner, tutor, quiz, and studio request models are in place, along with an explicit LangGraph-style planner flow.
+**Administrators:** dashboard with statistics, *students at risk* and *content gaps* (questions the tutor could not answer), course and lesson editor with publish/unpublish, student management, announcements to everyone or one course, a quiz editor (write quizzes, or review and edit AI-generated **drafts** before students see them), Course Studio (turn a YouTube playlist into a course, or attach videos to existing lessons).
 
-See `PROJECT_PLAN.md` for implementation status and the current persistence limitation.
+## Architecture
 
-### Run the API with authentication enabled
+![Architecture](docs/diagrams/architecture.png)
 
-1. Copy `server/.env.example` to `server/.env`.
-2. Set `JWT_SECRET` to a unique random value (at least 32 random bytes); do not commit it.
-3. From `server/`, run `npm run dev`. From `client/`, run `npm run dev`.
+Details: [`docs/architecture.md`](docs/architecture.md) · data model and ER diagrams: [`docs/data-model.md`](docs/data-model.md) · REST and Socket.IO reference: [`docs/api-spec.md`](docs/api-spec.md).
 
-Student/admin accounts, courses, enrollments, and learning progress are currently kept in memory and reset when the API process restarts. Configure both `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env` to seed the admin account when the server starts. Public registration cannot create admin accounts.
+## Quick start
 
-The React client uses the real API by default; set `VITE_API_MOCKING=enabled` to opt into the development-only MSW mock API, which supports the same course, enrollment, and progress flows.
+### Option A: Docker (one command)
+
+```bash
+cp .env.example .env          # fill JWT_SECRET, AI_SERVICE_TOKEN, ADMIN_PASSWORD (12+ chars)
+docker compose up --build     # web on http://localhost:8080
+```
+
+### Option B: run the three services yourself
+
+Prerequisites: Node 22+, Python 3.12+, MongoDB 7 running locally (or an Atlas URI).
+
+```bash
+npm run install:all                                   # server, client, e2e, postman dependencies
+pip install -r ai-service/requirements.txt
+
+cp server/.env.example server/.env                    # set JWT_SECRET (32+ bytes), ADMIN_PASSWORD, AI_SERVICE_TOKEN
+cp ai-service/.env.example ai-service/.env            # AI_SERVICE_TOKEN must match the API's
+# In server/.env, for the first run only:  SEED_ON_BOOT=true   SEED_DEMO_USERS=true
+
+npm run dev:ai        # terminal 1: AI service on :8000
+npm run dev:server    # terminal 2: API on :5000 (seeds 3 courses on first boot)
+npm run dev:client    # terminal 3: web app on http://localhost:5173
+```
+
+Generate a secret with `node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`.
+
+**Sign in as:** the admin you configured in `ADMIN_EMAIL` / `ADMIN_PASSWORD`; with `SEED_DEMO_USERS=true`, also `demo.student@adaptlearn.dev` and `priya.classmate@adaptlearn.dev` (password `Student-Demo-2026!`, override with `DEMO_PASSWORD`). Demo users are off by default because they have a known password.
+
+The AI features work **without any API key** (offline mode). The API and web app also run without the AI service; the tutor, planner and AI quiz then report "unavailable" and everything else keeps working.
+
+### Videos
+
+Seeded courses use the real NPTEL-NOC IITM lecture titles but **do not ship video IDs** (they cannot be verified offline). Open *Admin → Manage courses → Introduction to Database Systems → Attach videos from a YouTube playlist* and paste the playlist URL; videos are matched to lessons by title.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm run test:server` | 89 API tests against a real MongoDB (needs `mongod` on 27017, or set `MONGO_URI_TEST`) |
+| `npm run test:ai` | 87 AI-service tests (includes a MongoDB store test) |
+| `npm run test:client` | 28 component and guard tests |
+| `npm run lint:tokens` | fails if CSS hard-codes colours or spacing, or `tokens.css` is stale |
+| `npm run eval:ai` | regenerates `docs/evaluation-results.md` |
+| `npm run test:e2e` | boots everything and drives a real browser with two simultaneous users and an admin (39 steps, screenshots to `docs/screenshots`) |
+| `npm run test:postman` | boots API + AI and runs the 78-request Postman collection with Newman |
+| `npm run build:postman` | regenerates the collection from `postman/build-collection.mjs` |
+
+`npm run test:e2e` needs `pip install -r ai-service/requirements.txt`, MongoDB, and uses `E2E_PYTHON` if your Python is not `python3`/`python`.
+
+## Project layout
+
+```
+client/        React app  (src/pages, src/components, src/context, design-tokens.json -> src/styles/tokens.css)
+server/        Express API (src/models, controllers, services, middleware, sockets, validators, scripts/seed.js, tests/)
+ai-service/    FastAPI + LangGraph (app/graphs, services, guardrails, eval/, tests/)
+e2e/           real-browser tests + the orchestrator that boots the stack
+postman/       generated collection and environment
+docs/          architecture, data model, API, security, deployment, testing, AI design, user guide, checklist
+frontend-static/  Tasks 2-5 static HTML/CSS/JS prototype (unchanged, mock data)
+```
+
+## Documentation index
+
+| Document | Contents |
+|---|---|
+| [`docs/gap-analysis.md`](docs/gap-analysis.md) | The task list: what was found in the upload, what was done, what remains |
+| [`docs/submission-checklist.md`](docs/submission-checklist.md) | Tasks 9-15 mapped to evidence, with the items only you can finish |
+| [`docs/architecture.md`](docs/architecture.md) | Components, flows, design decisions, failure behaviour |
+| [`docs/data-model.md`](docs/data-model.md) | Collections, indexes, ER diagrams, mastery formula |
+| [`docs/api-spec.md`](docs/api-spec.md) | All 58 REST endpoints and the Socket.IO events |
+| [`docs/security.md`](docs/security.md) | Threat model, controls, how each is tested, known limitations |
+| [`docs/ai-design.md`](docs/ai-design.md) | LangGraph pipelines, retrieval, guardrails, providers, limits |
+| [`docs/evaluation-results.md`](docs/evaluation-results.md) | Measured AI quality (regenerated by `npm run eval:ai`) |
+| [`docs/testing.md`](docs/testing.md) | Test strategy, current results, what is not covered |
+| [`docs/deployment.md`](docs/deployment.md) | Atlas, Render, Vercel and Docker, step by step |
+| [`docs/user-guide.md`](docs/user-guide.md) | Student and administrator walkthrough with screenshots |
+
+## Honest limits
+
+Deployment, Docker, a real LLM and real YouTube could not be exercised in the build environment; see [`docs/gap-analysis.md`](docs/gap-analysis.md) section 3 and the "Known limitations" in [`docs/security.md`](docs/security.md).

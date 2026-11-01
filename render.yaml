@@ -1,0 +1,38 @@
+# Render Blueprint: API + AI service. The React app is deployed separately on Vercel (client/vercel.json).
+# MongoDB: create a free Atlas cluster and paste its connection string into MONGO_URI (Render does not host MongoDB).
+services:
+  - type: web
+    name: adaptlearn-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - { key: NODE_ENV, value: production }
+      - { key: TRUST_PROXY, value: "1" }
+      - { key: MONGO_URI, sync: false }          # Atlas connection string, database name included
+      - { key: JWT_SECRET, generateValue: true }
+      - { key: CLIENT_URL, sync: false }         # https://<your-app>.vercel.app
+      - { key: ADMIN_EMAIL, sync: false }
+      - { key: ADMIN_PASSWORD, sync: false }
+      - { key: AI_SERVICE_URL, sync: false }     # https://adaptlearn-ai.onrender.com
+      - { key: AI_SERVICE_TOKEN, sync: false }   # same value as on the AI service
+      - { key: SEED_ON_BOOT, value: "true" }     # set to "false" after the first successful deploy
+
+  - type: web
+    name: adaptlearn-ai
+    runtime: python
+    rootDir: ai-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - { key: ENVIRONMENT, value: production }
+      - { key: PYTHON_VERSION, value: "3.12.7" }
+      - { key: AI_SERVICE_TOKEN, sync: false }
+      - { key: MONGO_URI, sync: false }          # same Atlas cluster (the API's database is reused)
+      - { key: MONGO_DB, value: adaptlearn }
+      - { key: LLM_PROVIDER, value: offline }    # openai | azure once you add LLM_API_KEY

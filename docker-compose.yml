@@ -1,21 +1,53 @@
+# One command: docker compose up --build   ->  http://localhost:8080
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: adaptlearn
-      POSTGRES_USER: adaptlearn
-      POSTGRES_PASSWORD: adaptlearn
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   ai-service:
     build: ./ai-service
-    env_file:
-      - .env
-    ports:
-      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN:?Set AI_SERVICE_TOKEN in .env}
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: adaptlearn
+      LLM_PROVIDER: ${LLM_PROVIDER:-offline}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+    depends_on:
+      mongo: { condition: service_healthy }
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/adaptlearn
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:8080}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      AI_SERVICE_URL: http://ai-service:8000
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      SEED_ON_BOOT: ${SEED_ON_BOOT:-true}
+      SEED_DEMO_USERS: ${SEED_DEMO_USERS:-false}
+    depends_on:
+      mongo: { condition: service_healthy }
+      ai-service: { condition: service_started }
+
+  web:
+    build: ./client
+    restart: unless-stopped
+    ports: ["8080:80"]
+    depends_on: [api]
 
 volumes:
-  postgres-data:
+  mongo-data:

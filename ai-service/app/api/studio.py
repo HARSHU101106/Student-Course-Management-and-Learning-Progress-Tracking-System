@@ -1,18 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
-from app.schemas.models import StudioImportRequest
+from ..schemas.models import OutlineRequest, OutlineResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/studio", tags=["studio"])
 
 
-@router.post("/import")
-def import_playlist(payload: StudioImportRequest | dict | None = None):
-    if payload is None:
-        payload = {}
-    if isinstance(payload, dict):
-        payload = StudioImportRequest(**payload)
-    return {
-        "status": "queued",
-        "url": payload.url,
-        "modules": [{"title": "Imported module", "items": []}],
-    }
+@router.post("/outline", response_model=OutlineResponse)
+async def outline(body: OutlineRequest, request: Request) -> OutlineResponse:
+    state = await request.app.state.graphs["studio"].ainvoke({"items": [item.model_dump() for item in body.items]})
+    return OutlineResponse(**state["outline"])

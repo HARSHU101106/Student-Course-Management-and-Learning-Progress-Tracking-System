@@ -1,1 +1,13 @@
-export const models = {};
+export { User, DUMMY_HASH } from "./User.js";
+export { Course } from "./Course.js";
+export { Lesson } from "./Lesson.js";
+export { Enrollment } from "./Enrollment.js";
+export { LearningProgress } from "./LearningProgress.js";
+export { WatchEvent } from "./WatchEvent.js";
+export { Quiz } from "./Quiz.js";
+export { QuizAttempt } from "./QuizAttempt.js";
+export { TopicMastery } from "./TopicMastery.js";
+export { StudyPlan } from "./StudyPlan.js";
+export { Notification } from "./Notification.js";
+export { Message, dmRoom } from "./Message.js";
+export { TutorQuery } from "./TutorQuery.js";

@@ -1,0 +1,93 @@
+erDiagram
+    COURSE ||--o{ QUIZ : "has"
+    LESSON |o--o{ QUIZ : "scopes"
+    QUIZ ||--o{ QUIZ_ATTEMPT : "graded as"
+    USER ||--o{ QUIZ_ATTEMPT : "takes"
+    USER ||--o{ TOPIC_MASTERY : "has"
+    COURSE ||--o{ TOPIC_MASTERY : "in"
+    USER ||--o{ STUDY_PLAN : "receives"
+    COURSE ||--o{ STUDY_PLAN : "for"
+    USER ||--o{ TUTOR_QUERY : "asks"
+    COURSE ||--o{ TUTOR_QUERY : "about"
+    USER ||--o{ WATCH_EVENT : "generates"
+    LESSON ||--o{ WATCH_EVENT : "of"
+
+    USER {
+        ObjectId _id PK
+        string name
+        string email UK
+        string password "bcrypt hash, never returned"
+        string role "student | admin"
+        string department
+        number weeklyHours
+        boolean isActive
+        date passwordChangedAt
+        date lastLoginAt
+    }
+    COURSE {
+        ObjectId _id PK
+        string title
+        string slug UK
+        string description
+        string category
+        string level
+        number duration "weeks"
+        string status "draft | published"
+        number lessonCount
+        object source "manual | youtube-playlist"
+    }
+    LESSON {
+        ObjectId _id PK
+        ObjectId course FK
+        number order
+        string title
+        string module
+        string videoId "YouTube id"
+        array topics
+        string notes "RAG source text"
+    }
+    QUIZ {
+        ObjectId _id PK
+        ObjectId course FK
+        ObjectId lesson FK
+        string title
+        array questions "prompt, options, answerIndex, topic"
+        string status "draft | published"
+        string source "manual | ai"
+    }
+    QUIZ_ATTEMPT {
+        ObjectId student FK
+        ObjectId quiz FK
+        array answers
+        number score
+        number percent
+        array results
+    }
+    TOPIC_MASTERY {
+        ObjectId student FK
+        ObjectId course FK
+        string topic
+        number score "0..1 EWMA"
+        number attempts
+    }
+    STUDY_PLAN {
+        ObjectId student FK
+        ObjectId course FK
+        array items
+        string summary
+        string signature
+    }
+    TUTOR_QUERY {
+        ObjectId student FK
+        ObjectId course FK
+        string question
+        boolean grounded
+        boolean refused
+    }
+    WATCH_EVENT {
+        ObjectId student FK
+        ObjectId lesson FK
+        string event
+        number positionSec
+        number deltaSec
+    }

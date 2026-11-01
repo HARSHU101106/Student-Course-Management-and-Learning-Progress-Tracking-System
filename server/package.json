@@ -1,19 +1,34 @@
 {
   "name": "adaptlearn-server",
+  "version": "1.0.0",
   "private": true,
+  "description": "AdaptLearn API: Express, MongoDB (Mongoose), JWT auth and Socket.IO",
   "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
   "scripts": {
-    "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node --test"
+    "dev": "node --watch src/server.js",
+    "seed": "node src/scripts/seed.js",
+    "test": "node --test --test-concurrency=1 --test-reporter=spec \"tests/*.test.js\""
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cors": "latest",
-    "dotenv": "^18.0.9",
-    "express": "latest",
-    "jsonwebtoken": "^9.0.3",
-    "morgan": "^1.12.1",
-    "socket.io": "latest"
+    "bcryptjs": "3.0.3",
+    "compression": "1.8.2",
+    "cors": "2.8.6",
+    "dotenv": "18.0.9",
+    "express": "5.3.0",
+    "express-rate-limit": "8.7.1",
+    "helmet": "8.3.0",
+    "jsonwebtoken": "9.0.3",
+    "mongoose": "9.11.4",
+    "morgan": "1.12.1",
+    "socket.io": "4.8.4",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "socket.io-client": "4.8.4",
+    "supertest": "7.3.1"
   }
 }

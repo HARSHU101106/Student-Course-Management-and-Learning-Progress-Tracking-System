@@ -1,0 +1,22 @@
+{
+  "name": "adaptlearn",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AdaptLearn: student course management and learning portal (React, Express, MongoDB, Socket.IO, FastAPI + LangGraph).",
+  "scripts": {
+    "install:all": "npm --prefix server ci && npm --prefix client ci && npm --prefix e2e ci && npm --prefix postman ci",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "dev:ai": "cd ai-service && python -m uvicorn app.main:app --reload --port 8000",
+    "seed": "npm --prefix server run seed",
+    "test:server": "npm --prefix server test",
+    "test:client": "npm --prefix client test",
+    "test:ai": "cd ai-service && python -m pytest -q",
+    "eval:ai": "cd ai-service && python -m eval.run_eval --json eval/results.json --markdown ../docs/evaluation-results.md",
+    "lint:tokens": "npm --prefix client run lint:tokens",
+    "test:e2e": "node e2e/run.mjs",
+    "test:postman": "node e2e/run.mjs --api-only",
+    "build:postman": "npm --prefix postman run build",
+    "build": "npm --prefix client run build"
+  }
+}

@@ -1,0 +1,18 @@
+sequenceDiagram
+  autonumber
+  participant A as Alice (browser)
+  participant S as API + Socket.IO
+  participant M as MongoDB
+  participant B as Bob (browser, any page)
+  A->>S: connect (auth.token = JWT)
+  S->>M: load user, reject if inactive or stale token
+  S-->>A: connected, joined user room
+  B->>S: connect (JWT)
+  A->>S: chat:send {to: Bob, text}
+  S->>S: check canMessage(classmate or instructor), sanitise, rate-limit
+  S->>M: insert Message
+  S-->>A: chat:message (sender copy)
+  S-->>B: chat:message (if Bob has the chat open)
+  S->>M: upsert unread "message" Notification (coalesced per sender)
+  S-->>B: notification:new
+  B->>B: toast + bell count, no page refresh

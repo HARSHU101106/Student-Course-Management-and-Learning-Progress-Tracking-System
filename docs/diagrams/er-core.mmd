@@ -1,0 +1,72 @@
+erDiagram
+    USER ||--o{ ENROLLMENT : "enrols"
+    COURSE ||--o{ ENROLLMENT : "has"
+    COURSE ||--o{ LESSON : "contains"
+    USER ||--o{ LEARNING_PROGRESS : "tracks"
+    COURSE ||--o{ LEARNING_PROGRESS : "for"
+    USER ||--o{ NOTIFICATION : "receives"
+    USER ||--o{ MESSAGE : "sends"
+    COURSE |o--o{ MESSAGE : "course room"
+
+    USER {
+        ObjectId _id PK
+        string name
+        string email UK
+        string password "bcrypt hash, never returned"
+        string role "student | admin"
+        string department
+        number weeklyHours
+        boolean isActive
+        date passwordChangedAt
+        date lastLoginAt
+    }
+    COURSE {
+        ObjectId _id PK
+        string title
+        string slug UK
+        string description
+        string category
+        string level
+        number duration "weeks"
+        string status "draft | published"
+        number lessonCount
+        object source "manual | youtube-playlist"
+    }
+    LESSON {
+        ObjectId _id PK
+        ObjectId course FK
+        number order
+        string title
+        string module
+        string videoId "YouTube id"
+        array topics
+        string notes "RAG source text"
+    }
+    ENROLLMENT {
+        ObjectId student FK
+        ObjectId course FK
+        string status "active | completed | dropped"
+        date enrolledAt
+        date completedAt
+    }
+    LEARNING_PROGRESS {
+        ObjectId student FK
+        ObjectId course FK
+        array completedLessonIds
+        number percent
+        map lessonPositions
+        number watchSeconds
+    }
+    NOTIFICATION {
+        ObjectId user FK
+        string type
+        string title
+        boolean read
+        mixed meta
+    }
+    MESSAGE {
+        string room "course id or dm pair"
+        ObjectId sender FK
+        ObjectId recipient FK
+        string text
+    }

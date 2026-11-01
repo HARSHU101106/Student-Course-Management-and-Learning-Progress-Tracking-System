@@ -1,0 +1,11 @@
+{
+  "name": "adaptlearn-postman",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build-collection.mjs"
+  },
+  "devDependencies": {
+    "newman": "6.2.3"
+  }
+}

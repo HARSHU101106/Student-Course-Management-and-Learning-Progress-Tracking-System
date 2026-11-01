@@ -1,37 +1,53 @@
 import http from "node:http";
-import { Server } from "socket.io";
-import app from "./app.js";
+import { createApp } from "./app.js";
+import { connectDatabase, disconnectDatabase } from "./config/db.js";
 import { env } from "./config/env.js";
-import { createAdminAccount } from "./services/auth.service.js";
-import { registerSockets } from "./sockets/index.js";
+import { createSocketServer } from "./sockets/index.js";
+import { ensureAdminAccount } from "./services/bootstrap.service.js";
 
-const port = env.port;
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
+async function main() {
+  await connectDatabase();
+  console.log(JSON.stringify({ level: "info", msg: "MongoDB connected" }));
 
-registerSockets(io);
-
-async function startServer() {
-  if (Boolean(env.adminEmail) !== Boolean(env.adminPassword)) {
-    throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must both be configured.");
+  await ensureAdminAccount();
+  if (env.seedOnBoot) {
+    const { seedDemoData } = await import("./scripts/seed.js");
+    await seedDemoData();
   }
 
-  if (env.adminEmail) {
-    await createAdminAccount({
-      email: env.adminEmail,
-      password: env.adminPassword,
+  const app = createApp();
+  const server = http.createServer(app);
+  const io = createSocketServer(server);
+
+  // Render/Heroku-style platforms may keep connections alive longer than Node's defaults.
+  server.keepAliveTimeout = 65_000;
+  server.headersTimeout = 66_000;
+
+  await new Promise((resolve) => server.listen(env.port, resolve));
+  console.log(JSON.stringify({ level: "info", msg: "AdaptLearn API listening", port: env.port, env: env.nodeEnv }));
+
+  let closing = false;
+  async function shutdown(signal) {
+    if (closing) return;
+    closing = true;
+    console.log(JSON.stringify({ level: "info", msg: "Shutting down", signal }));
+    const force = setTimeout(() => process.exit(1), 10_000);
+    force.unref();
+    io.close();
+    server.close(async () => {
+      await disconnectDatabase();
+      process.exit(0);
     });
   }
-
-  server.listen(port, () => console.log(`AdaptLearn server listening on ${port}`));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
-startServer().catch((error) => {
-  console.error("AdaptLearn server startup failed:", error.message);
-  process.exitCode = 1;
+process.on("unhandledRejection", (reason) => {
+  console.error(JSON.stringify({ level: "error", msg: "Unhandled rejection", reason: String(reason) }));
+});
+
+main().catch((error) => {
+  console.error(JSON.stringify({ level: "fatal", msg: "Startup failed", error: error.message }));
+  process.exit(1);
 });

@@ -1,26 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
-from app.schemas.models import TutorAnswer, TutorRequest
+from ..schemas.models import Citation, TutorRequest, TutorResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/tutor", tags=["tutor"])
 
 
-@router.post("/answer")
-def answer_question(payload: TutorRequest | dict | None = None):
-    if payload is None:
-        payload = {}
-    if isinstance(payload, dict):
-        payload = TutorRequest(**payload)
-
-    query = payload.question.lower()
-    if "2nf" in query:
-        answer = "2NF removes partial dependencies. 3NF also removes transitive dependencies."
-        citations = [{"lesson": "Database Design and Normalization", "timestamp": 570}]
-    elif "normal" in query or "join" in query:
-        answer = "Normalization organizes data to reduce redundancy and protect integrity, while joins combine rows from related tables."
-        citations = [{"lesson": "SQL Joins and Relational Design", "timestamp": 430}]
-    else:
-        answer = "That concept is covered in the course material. Try asking about normalization, joins, transactions, or indexing."
-        citations = [{"lesson": "Lecture overview", "timestamp": 0}]
-
-    return TutorAnswer(answer=answer, citations=citations).model_dump()
+@router.post("/answer", response_model=TutorResponse)
+async def answer(body: TutorRequest, request: Request) -> TutorResponse:
+    state = await request.app.state.graphs["tutor"].ainvoke(
+        {
+            "course_id": body.courseId,
+            "lesson_id": body.lessonId,
+            "question": body.question,
+            "history": [turn.model_dump() for turn in body.history],
+        }
+    )
+    return TutorResponse(
+        answer=state["answer"],
+        citations=[Citation(**c) for c in state.get("citations", [])],
+        grounded=state.get("grounded", False),
+        refused=state.get("refused", False),
+        generatedBy=state.get("generated_by", "none"),
+        suggestions=state.get("suggestions", []),
+    )

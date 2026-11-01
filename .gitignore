@@ -1,12 +1,23 @@
+# dependencies and build output
 node_modules/
 dist/
-build/
-.venv/
-venv/
-__pycache__/
-*.py[cod]
+.vite/
+
+# secrets and local config (templates ending in .example are tracked)
 .env
 .env.*
 !.env.example
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# tooling output
+coverage/
 *.log
+newman/
 .DS_Store
+Thumbs.db

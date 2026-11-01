@@ -1,17 +1,28 @@
 import { env } from "../config/env.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const YOUTUBE_API = "https://www.googleapis.com/youtube/v3";
+const ALLOWED_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"]);
+const PLAYLIST_ID = /^[A-Za-z0-9_-]{10,64}$/;
+const MAX_ITEMS = 300;
+const TIMEOUT_MS = 12_000;
 
-function playlistIdFromUrl(value) {
+/**
+ * Extract a playlist id from a user-supplied URL. Only YouTube hosts are accepted and
+ * the outbound request URL is always built from our own constants, so a caller can never
+ * make the server fetch an arbitrary address (SSRF).
+ */
+export function playlistIdFromUrl(value) {
+  let url;
   try {
-    const url = new URL(value);
-    if (url.hostname === "youtu.be") return url.searchParams.get("list");
-    if (url.hostname.endsWith("youtube.com"))
-      return url.searchParams.get("list");
+    url = new URL(value);
   } catch {
     return null;
   }
-  return null;
+  if (!["https:", "http:"].includes(url.protocol)) return null;
+  if (!ALLOWED_HOSTS.has(url.hostname.toLowerCase())) return null;
+  const id = url.searchParams.get("list");
+  return id && PLAYLIST_ID.test(id) ? id : null;
 }
 
 function decodeXml(value = "") {
@@ -26,115 +37,138 @@ function decodeXml(value = "") {
 }
 
 function tagValue(block, tag) {
-  const match = block.match(
-    new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`),
-  );
+  const match = block.match(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`));
   return match ? decodeXml(match[1]) : "";
 }
 
-async function requestJson(url) {
-  const response = await fetch(url);
-  const body = await response.json();
-  if (!response.ok)
-    throw new Error(body?.error?.message || "YouTube API request failed.");
+async function getJson(url) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body?.error?.message || "YouTube API request failed.");
   return body;
 }
 
 async function importWithApi(playlistId) {
-  const params = new URLSearchParams({
-    part: "snippet,status",
-    id: playlistId,
-    key: env.youtubeApiKey,
-  });
-  const playlist = await requestJson(`${YOUTUBE_API}/playlists?${params}`);
-  const playlistItem = playlist.items?.[0];
-  if (!playlistItem)
-    throw new Error("That YouTube playlist was not found or is not public.");
+  const meta = await getJson(
+    `${YOUTUBE_API}/playlists?${new URLSearchParams({ part: "snippet", id: playlistId, key: env.youtubeApiKey })}`,
+  );
+  const playlist = meta.items?.[0];
+  if (!playlist) throw new Error("That playlist was not found or is not public.");
 
   const items = [];
   let pageToken = "";
   do {
-    const itemParams = new URLSearchParams({
+    const params = new URLSearchParams({
       part: "snippet,contentDetails",
       playlistId,
       maxResults: "50",
       key: env.youtubeApiKey,
     });
-    if (pageToken) itemParams.set("pageToken", pageToken);
-    const page = await requestJson(
-      `${YOUTUBE_API}/playlistItems?${itemParams}`,
-    );
-    items.push(
-      ...(page.items || [])
-        .filter((item) => item.snippet?.title !== "Private video")
-        .map((item) => ({
-          videoId: item.contentDetails?.videoId,
-          title: item.snippet?.title,
-          description: item.snippet?.description || "",
-          position: item.snippet?.position ?? items.length,
-          publishedAt:
-            item.contentDetails?.videoPublishedAt || item.snippet?.publishedAt,
-          thumbnail:
-            item.snippet?.thumbnails?.medium?.url ||
-            item.snippet?.thumbnails?.default?.url ||
-            null,
-        })),
-    );
+    if (pageToken) params.set("pageToken", pageToken);
+    const page = await getJson(`${YOUTUBE_API}/playlistItems?${params}`);
+    for (const item of page.items ?? []) {
+      const videoId = item.contentDetails?.videoId;
+      const title = item.snippet?.title;
+      if (!videoId || !title || title === "Private video" || title === "Deleted video") continue;
+      items.push({ videoId, title, description: item.snippet?.description ?? "", position: items.length });
+    }
     pageToken = page.nextPageToken || "";
-  } while (pageToken);
+  } while (pageToken && items.length < MAX_ITEMS);
 
   return {
     playlistId,
-    title: playlistItem.snippet.title,
-    description: playlistItem.snippet.description || "",
-    channel: playlistItem.snippet.channelTitle || "",
+    title: playlist.snippet.title,
+    description: playlist.snippet.description ?? "",
+    channel: playlist.snippet.channelTitle ?? "",
     source: "youtube-api",
-    items,
+    items: items.slice(0, MAX_ITEMS),
   };
 }
 
 async function importWithFeed(playlistId) {
   const response = await fetch(
     `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`,
+    { signal: AbortSignal.timeout(TIMEOUT_MS) },
   );
-  if (!response.ok)
-    throw new Error(
-      "That YouTube playlist could not be loaded. Check that it is public.",
-    );
+  if (!response.ok) throw new Error("That playlist could not be loaded. Check that it is public.");
   const xml = await response.text();
-  const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)]
-    .map((match, position) => {
-      const block = match[1];
-      return {
-        videoId: tagValue(block, "yt:videoId"),
-        title: tagValue(block, "title"),
-        description: tagValue(block, "media:description"),
-        position,
-        publishedAt: tagValue(block, "published"),
-        thumbnail: null,
-      };
-    })
-    .filter((item) => item.videoId && item.title);
-  if (!entries.length)
-    throw new Error("No public videos were found in that playlist.");
-  const title = tagValue(xml, "title") || "Imported YouTube playlist";
+  const items = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)]
+    .map((match, position) => ({
+      videoId: tagValue(match[1], "yt:videoId"),
+      title: tagValue(match[1], "title"),
+      description: tagValue(match[1], "media:description"),
+      position,
+    }))
+    .filter((item) => item.videoId && item.title)
+    .slice(0, MAX_ITEMS);
+  if (!items.length) throw new Error("No public videos were found in that playlist.");
+
+  // The first <title> in the feed is the playlist title (entries come after it).
+  const header = xml.split("<entry>")[0];
   return {
     playlistId,
-    title,
-    description: "Imported from the public YouTube playlist feed.",
-    channel: "",
+    title: tagValue(header, "title") || "Imported YouTube playlist",
+    description: "",
+    channel: tagValue(header, "name"),
     source: "youtube-feed",
-    items: entries,
+    items,
   };
 }
 
 export async function importYouTubePlaylist(url) {
   const playlistId = playlistIdFromUrl(url);
-  if (!playlistId)
-    throw new Error(
-      "Enter a valid YouTube playlist URL containing a playlist ID.",
-    );
-  return env.youtubeApiKey
-    ? importWithApi(playlistId)
-    : importWithFeed(playlistId);
+  if (!playlistId) {
+    throw ApiError.badRequest("Enter a valid YouTube playlist URL that contains a list= parameter.");
+  }
+  try {
+    return env.youtubeApiKey ? await importWithApi(playlistId) : await importWithFeed(playlistId);
+  } catch (error) {
+    throw new ApiError(422, error.name === "TimeoutError" ? "YouTube did not respond in time." : error.message);
+  }
+}
+
+const STOP = new Set(["the", "a", "an", "of", "to", "and", "in", "for", "on", "with", "using", "introduction"]);
+
+function tokens(text) {
+  return new Set(
+    String(text)
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]+/g, " ")
+      .split(/\s+/)
+      .filter((word) => word && !STOP.has(word)),
+  );
+}
+
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let shared = 0;
+  for (const word of a) if (b.has(word)) shared += 1;
+  return shared / (a.size + b.size - shared);
+}
+
+/**
+ * Map playlist videos onto existing lessons by title similarity.
+ * Returns [{ lessonId, videoId, score }] for confident matches plus the unmatched lesson ids.
+ */
+export function matchVideosToLessons(lessons, items, threshold = 0.34) {
+  const used = new Set();
+  const matches = [];
+  const unmatched = [];
+
+  for (const lesson of lessons) {
+    const lessonTokens = tokens(lesson.title);
+    let best = null;
+    for (const item of items) {
+      if (used.has(item.videoId)) continue;
+      const score = jaccard(lessonTokens, tokens(item.title));
+      if (score >= threshold && (!best || score > best.score)) best = { item, score };
+    }
+    if (best) {
+      used.add(best.item.videoId);
+      matches.push({ lessonId: String(lesson._id), videoId: best.item.videoId, title: best.item.title, score: Math.round(best.score * 100) / 100 });
+    } else {
+      unmatched.push(String(lesson._id));
+    }
+  }
+  return { matches, unmatched };
 }

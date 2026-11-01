@@ -1,0 +1,28 @@
+flowchart LR
+  subgraph Browser["Browser (React 19 + Vite)"]
+    UI["Pages and components<br/>design tokens, light/dark"]
+    AX["Axios API client<br/>JWT in Authorization header"]
+    SC["Socket.IO client<br/>JWT in handshake"]
+  end
+  subgraph API["API service (Node 22, Express 5)"]
+    SEC["helmet, CORS allow-list, rate limits,<br/>operator-injection guard, zod validation"]
+    CTL["Controllers and services"]
+    SIO["Socket.IO server<br/>auth, rooms, per-socket limits"]
+    AIC["AI client<br/>bearer token, timeouts"]
+  end
+  subgraph AI["AI service (FastAPI + LangGraph)"]
+    G["Tutor, quiz, planner and studio graphs"]
+    R["TF-IDF retrieval + guardrails"]
+    L["LLM provider<br/>offline, OpenAI or Azure"]
+  end
+  DB[("MongoDB<br/>Mongoose models, ai_chunks, ai_models")]
+  YT["YouTube<br/>(IFrame player, playlist feed)"]
+  UI --> AX --> SEC --> CTL
+  SC <--> SIO
+  CTL --> DB
+  SIO --> DB
+  CTL --> AIC --> G
+  G --> R --> DB
+  G -.optional.-> L
+  UI -. embeds .-> YT
+  CTL -. playlist import .-> YT

@@ -1,0 +1,212 @@
+/* Design Tokens - Auto-generated */
+/* Do not edit directly - modify tokens.json instead */
+
+/* === PRIMITIVES === */
+:root {
+  --primitive-color-ink-50: #F4F6FA;
+  --primitive-color-ink-100: #E8ECF3;
+  --primitive-color-ink-200: #D3DAE6;
+  --primitive-color-ink-300: #B3BDCF;
+  --primitive-color-ink-400: #8693AB;
+  --primitive-color-ink-500: #5F6C85;
+  --primitive-color-ink-600: #465270;
+  --primitive-color-ink-700: #323C57;
+  --primitive-color-ink-800: #1E2640;
+  --primitive-color-ink-900: #131A30;
+  --primitive-color-ink-950: #0B1020;
+  --primitive-color-teal-300: #5EEAD4;
+  --primitive-color-teal-400: #2DD4BF;
+  --primitive-color-teal-500: #14B8A6;
+  --primitive-color-teal-600: #0D9488;
+  --primitive-color-teal-700: #0F766E;
+  --primitive-color-teal-800: #115E59;
+  --primitive-color-amber-100: #FEF3C7;
+  --primitive-color-amber-400: #FBBF24;
+  --primitive-color-amber-500: #F59E0B;
+  --primitive-color-amber-700: #B45309;
+  --primitive-color-amber-900: #78350F;
+  --primitive-color-coral-100: #FFE4E1;
+  --primitive-color-coral-300: #FDA4AF;
+  --primitive-color-coral-400: #FB7185;
+  --primitive-color-coral-500: #F43F5E;
+  --primitive-color-coral-600: #E11D48;
+  --primitive-color-coral-700: #BE123C;
+  --primitive-color-coral-800: #9F1239;
+  --primitive-color-coral-900: #881337;
+  --primitive-color-mint-100: #DCFCE7;
+  --primitive-color-mint-400: #4ADE80;
+  --primitive-color-mint-500: #22C55E;
+  --primitive-color-mint-600: #16A34A;
+  --primitive-color-mint-700: #15803D;
+  --primitive-color-mint-900: #14532D;
+  --primitive-color-white: #FFFFFF;
+  --primitive-spacing-0: 0;
+  --primitive-spacing-1: 0.25rem;
+  --primitive-spacing-2: 0.5rem;
+  --primitive-spacing-3: 0.75rem;
+  --primitive-spacing-4: 1rem;
+  --primitive-spacing-5: 1.25rem;
+  --primitive-spacing-6: 1.5rem;
+  --primitive-spacing-8: 2rem;
+  --primitive-spacing-10: 2.5rem;
+  --primitive-spacing-12: 3rem;
+  --primitive-spacing-16: 4rem;
+  --primitive-fontSize-xs: 0.75rem;
+  --primitive-fontSize-sm: 0.875rem;
+  --primitive-fontSize-base: 1rem;
+  --primitive-fontSize-lg: 1.125rem;
+  --primitive-fontSize-xl: 1.25rem;
+  --primitive-fontSize-2xl: 1.5rem;
+  --primitive-fontSize-3xl: 1.875rem;
+  --primitive-fontSize-4xl: 2.5rem;
+  --primitive-radius-none: 0;
+  --primitive-radius-sm: 0.375rem;
+  --primitive-radius-md: 0.625rem;
+  --primitive-radius-lg: 1rem;
+  --primitive-radius-full: 9999px;
+  --primitive-shadow-sm: 0 1px 2px rgba(11,16,32,0.10);
+  --primitive-shadow-md: 0 6px 20px rgba(11,16,32,0.14);
+  --primitive-shadow-lg: 0 18px 48px rgba(11,16,32,0.22);
+  --primitive-duration-fast: 120ms;
+  --primitive-duration-base: 200ms;
+  --primitive-duration-slow: 320ms;
+  --primitive-size-container: 72rem;
+  --primitive-size-reading: 46rem;
+  --primitive-size-modal: 32rem;
+  --primitive-size-sidebar: 16rem;
+  --primitive-size-toast: 24rem;
+  --primitive-size-col-sm: 11rem;
+  --primitive-size-col-md: 12rem;
+  --primitive-size-col-lg: 19rem;
+  --primitive-size-col-xl: 22rem;
+  --primitive-size-panel-sm: 8rem;
+  --primitive-size-panel-md: 24rem;
+  --primitive-size-panel-lg: 28rem;
+  --primitive-size-panel-xl: 30rem;
+  --primitive-size-log: 26rem;
+  --primitive-size-icon-xs: 0.5rem;
+  --primitive-size-icon-sm: 1rem;
+  --primitive-size-icon-md: 1.75rem;
+  --primitive-size-icon-lg: 2rem;
+  --primitive-size-check: 1.1rem;
+  --primitive-size-badge: 1.15rem;
+  --primitive-size-bar: 0.6rem;
+  --primitive-size-chat-min: 32rem;
+}
+
+/* === SEMANTIC === */
+:root {
+  --color-background: #F4F6FA;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #E8ECF3;
+  --color-foreground: #131A30;
+  --color-muted-foreground: #465270;
+  --color-border: #D3DAE6;
+  --color-primary: #0F766E;
+  --color-primary-hover: #115E59;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-soft: #5EEAD4;
+  --color-accent: #F59E0B;
+  --color-accent-foreground: #0B1020;
+  --color-success: #15803D;
+  --color-success-soft: #DCFCE7;
+  --color-warning: #B45309;
+  --color-warning-soft: #FEF3C7;
+  --color-destructive: #BE123C;
+  --color-destructive-hover: #9F1239;
+  --color-destructive-soft: #FFE4E1;
+  --color-destructive-foreground: #FFFFFF;
+  --color-focus-ring: #0D9488;
+  --color-nav-bg: #0B1020;
+  --color-nav-foreground: #E8ECF3;
+  --spacing-component: 1rem;
+  --spacing-section: 3rem;
+  --spacing-gutter: 1.5rem;
+}
+
+/* === COMPONENTS === */
+:root {
+  --button-bg: #0F766E;
+  --button-fg: #FFFFFF;
+  --button-hover-bg: #115E59;
+  --button-padding-x: 1rem;
+  --button-padding-y: 0.5rem;
+  --button-radius: 0.625rem;
+  --button-font-size: 0.875rem;
+  --input-bg: #FFFFFF;
+  --input-fg: #131A30;
+  --input-border: #D3DAE6;
+  --input-focus-border: #0D9488;
+  --input-padding-x: 0.75rem;
+  --input-padding-y: 0.5rem;
+  --input-radius: 0.625rem;
+  --input-font-size: 1rem;
+  --card-bg: #FFFFFF;
+  --card-border: #D3DAE6;
+  --card-padding: 1.25rem;
+  --card-radius: 1rem;
+  --card-shadow: 0 1px 2px rgba(11,16,32,0.10);
+  --badge-bg: #E8ECF3;
+  --badge-fg: #131A30;
+  --badge-radius: 9999px;
+  --badge-padding-x: 0.5rem;
+  --badge-font-size: 0.75rem;
+  --nav-bg: #0B1020;
+  --nav-fg: #E8ECF3;
+  --nav-height: 3.75rem;
+  --chat-self-bg: #0F766E;
+  --chat-self-fg: #FFFFFF;
+  --chat-other-bg: #E8ECF3;
+  --chat-other-fg: #131A30;
+  --chat-radius: 1rem;
+  --progress-track: #E8ECF3;
+  --progress-fill: #0F766E;
+  --progress-radius: 9999px;
+}
+
+/* === DARK MODE === */
+.dark {
+  --color-background: #0B1020;
+  --color-surface: #131A30;
+  --color-surface-muted: #1E2640;
+  --color-foreground: #F4F6FA;
+  --color-muted-foreground: #B3BDCF;
+  --color-border: #323C57;
+  --color-primary: #2DD4BF;
+  --color-primary-hover: #5EEAD4;
+  --color-primary-foreground: #0B1020;
+  --color-primary-soft: #115E59;
+  --color-accent: #FBBF24;
+  --color-success: #4ADE80;
+  --color-success-soft: #14532D;
+  --color-warning: #FBBF24;
+  --color-warning-soft: #78350F;
+  --color-destructive: #FDA4AF;
+  --color-destructive-hover: #FB7185;
+  --color-destructive-soft: #881337;
+  --color-destructive-foreground: #0B1020;
+  --color-focus-ring: #5EEAD4;
+  --color-nav-bg: #131A30;
+}
+
+/* Component tokens re-resolved for the dark theme */
+.dark {
+  --button-bg: #2DD4BF;
+  --button-fg: #0B1020;
+  --button-hover-bg: #5EEAD4;
+  --input-bg: #131A30;
+  --input-fg: #F4F6FA;
+  --input-border: #323C57;
+  --input-focus-border: #5EEAD4;
+  --card-bg: #131A30;
+  --card-border: #323C57;
+  --badge-bg: #1E2640;
+  --badge-fg: #F4F6FA;
+  --nav-bg: #131A30;
+  --chat-self-bg: #2DD4BF;
+  --chat-self-fg: #0B1020;
+  --chat-other-bg: #1E2640;
+  --chat-other-fg: #F4F6FA;
+  --progress-track: #1E2640;
+  --progress-fill: #2DD4BF;
+}

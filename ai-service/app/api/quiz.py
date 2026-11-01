@@ -1,31 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Request
 
-from app.schemas.models import QuizGenerationRequest, QuizQuestion
+from ..schemas.models import QuizQuestion, QuizRequest, QuizResponse
 
-router = APIRouter()
-
-
-@router.get("/demo")
-def demo_quiz():
-    return {
-        "items": [
-            {"id": 1, "prompt": "What does 3NF remove?", "options": ["Partial dependencies", "Transitive dependencies"], "answer": "Transitive dependencies"}
-        ]
-    }
+router = APIRouter(prefix="/v1/quiz", tags=["quiz"])
 
 
-@router.post("/generate")
-def generate_quiz(payload: QuizGenerationRequest | dict | None = None):
-    if payload is None:
-        payload = {}
-    if isinstance(payload, dict):
-        payload = QuizGenerationRequest(**payload)
-
-    question = QuizQuestion(
-        id=1,
-        prompt=f"Which topic best matches {payload.lesson_id or payload.course_id or 'this lesson'}?",
-        options=["Normalization", "Sorting", "Networking", "Rendering"],
-        answer="Normalization",
+@router.post("/generate", response_model=QuizResponse)
+async def generate(body: QuizRequest, request: Request) -> QuizResponse:
+    state = await request.app.state.graphs["quiz"].ainvoke(
+        {"course_id": body.courseId, "lesson_id": body.lessonId, "count": body.count, "difficulty": body.difficulty}
     )
-
-    return {"questions": [question.model_dump()]}
+    if state.get("index_missing"):
+        raise HTTPException(404, "This course has not been indexed yet. Re-index it, then try again.")
+    return QuizResponse(
+        questions=[QuizQuestion(**q) for q in state["questions"]],
+        generatedBy=state["generated_by"],
+    )
