@@ -132,6 +132,9 @@ export async function generateQuiz(request, response) {
       q.answerIndex >= 0 &&
       q.answerIndex < q.options.length,
   );
+  if (questions.length < count) {
+    throw new ApiError(422, `The AI service returned ${questions.length} questions but ${count} were requested.`);
+  }
   if (questions.length === 0) {
     throw new ApiError(422, "The AI service could not produce valid questions from the available material.");
   }

@@ -65,13 +65,16 @@ def generate_cloze(index: CourseIndex, *, lesson_id: str | None, count: int, dif
             terms = _candidates(sentence, idf)
             if not terms:
                 continue
+            ranked = [term for term, _ in terms]
             if difficulty == "hard":
-                term = terms[0][0]
+                ordered_terms = ranked[: min(4, len(ranked))]
             elif difficulty == "easy":
-                term = terms[-1][0]
+                ordered_terms = list(reversed(ranked[: min(4, len(ranked))]))
             else:
-                term = terms[len(terms) // 2][0]
-            rows.append({"sentence": sentence, "term": term, "chunk": chunk})
+                middle = max(1, len(ranked) // 2)
+                ordered_terms = ranked[max(0, middle - 1): min(len(ranked), middle + 3)]
+            for term in ordered_terms:
+                rows.append({"sentence": sentence, "term": term, "chunk": chunk})
         per_chunk.append(rows)
 
     # Round-robin across chunks so questions cover different material.
@@ -82,6 +85,7 @@ def generate_cloze(index: CourseIndex, *, lesson_id: str | None, count: int, dif
         depth += 1
 
     questions: list[dict[str, Any]] = []
+    seen_prompts: set[str] = set()
     for row in ordered:
         if len(questions) >= count:
             break
@@ -91,28 +95,44 @@ def generate_cloze(index: CourseIndex, *, lesson_id: str | None, count: int, dif
             continue
         original = blank.search(sentence).group()
         prompt_text = blank.sub("______", sentence)
-        sentence_stems = {stem(w.lower()) for w in _WORD.findall(sentence)}
+        prompt_key = prompt_text.lower()
+        if prompt_key in seen_prompts:
+            continue
+        seen_prompts.add(prompt_key)
+
         topic = (chunk.get("topics") or ["General"])[0]
+
         # Prefer distractors from the same topic, then similar length, then a stable hash.
         distractors = sorted(
             (
                 t for t in pool
-                if t != term and stem(t) != stem(term) and stem(t) not in sentence_stems and abs(len(t) - len(term)) <= 5
+                if t != term and stem(t) != stem(term) and abs(len(t) - len(term)) <= 5
             ),
             key=lambda t: (pool[t] != topic, abs(len(t) - len(term)), _digest(sentence, t)),
         )[:3]
+
+        if len(distractors) < 3:
+            sentence_words = [
+                w for w in _WORD.findall(sentence)
+                if w.lower() != term.lower() and stem(w.lower()) != stem(term) and w.lower() not in STOPWORDS and w.lower() not in _GENERIC
+            ]
+            distractors = sorted(
+                set(distractors + sentence_words[:3]),
+                key=lambda t: (_digest(sentence, t), t.lower()),
+            )[:3]
+
         if len(distractors) < 3:
             continue
+
         options = [_match_case(t, original) for t in [term, *distractors]]
         options.sort(key=lambda o: _digest(sentence, "order", o))
-        questions.append(
-            {
-                "prompt": f"Fill in the blank: {prompt_text}",
-                "options": options,
-                "answerIndex": options.index(_match_case(term, original)),
-                "explanation": sentence,
-                "topic": (chunk.get("topics") or ["General"])[0],
-                "difficulty": difficulty,
-            }
-        )
+        question = {
+            "prompt": f"Fill in the blank: {prompt_text}",
+            "options": options,
+            "answerIndex": options.index(_match_case(term, original)),
+            "explanation": sentence,
+            "topic": topic,
+            "difficulty": difficulty,
+        }
+        questions.append(question)
     return questions

@@ -48,8 +48,20 @@ class TestQuiz:
         ]})
         llm = FakeLLM(reply)
         body = gen(make_client(llm), count=5).json()
-        assert body["generatedBy"] == "fake:model" and len(body["questions"]) == 1
+        assert body["generatedBy"] == "fake:model" and len(body["questions"]) == 5
         assert llm.calls[0]["json_mode"] is True
+
+    def test_short_llm_output_is_filled_to_requested_count(self, make_client):
+        reply = json.dumps({"questions": [{
+            "prompt": "Which property means all or nothing?",
+            "options": ["Atomicity", "Durability", "Isolation", "Consistency"],
+            "answerIndex": 0,
+            "explanation": "Atomicity is all or nothing.",
+            "topic": "Transactions",
+        }]})
+        body = gen(make_client(FakeLLM(reply)), count=4).json()
+        assert body["generatedBy"] == "fake:model"
+        assert len(body["questions"]) == 4
 
     @pytest.mark.parametrize("reply", ["not json at all", "{}", "[]", '{"questions": "nope"}'])
     def test_unusable_llm_output_falls_back_to_offline_generation(self, make_client, reply):

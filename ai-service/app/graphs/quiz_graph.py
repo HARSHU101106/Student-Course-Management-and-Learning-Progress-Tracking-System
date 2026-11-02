@@ -65,12 +65,46 @@ def build_quiz_graph(deps: Deps):
         if deps.llm.available and scoped:
             step = max(1, len(scoped) // 8)
             passages = "\n\n".join(f"[{c['title']}] {c['text']}" for c in scoped[::step][:8])
-            user = f"Passages:\n{passages}\n\nWrite {state['count']} {state['difficulty']} questions."
+            user = (
+                f"Passages:\n{passages}\n\n"
+                f"Write exactly {state['count']} {state['difficulty']} questions in JSON with a top-level 'questions' array. "
+                "Each question must have prompt, options, answerIndex, explanation, topic, and difficulty. "
+                "Use only source material."
+            )
             try:
-                text = await deps.llm.complete(QUIZ_SYSTEM, user, json_mode=True, max_tokens=1400)
+                text = await deps.llm.complete(QUIZ_SYSTEM, user, json_mode=True, max_tokens=1800)
                 usable = [q for q in (validate_question(r) for r in parse_json_questions(text)) if q]
                 if usable:
-                    return {"raw": usable, "generated_by": deps.llm.name}
+                    deduped: list[dict[str, Any]] = []
+                    seen: set[tuple[str, tuple[str, ...]]] = set()
+                    for q in usable:
+                        key = (q["prompt"].lower(), tuple(option.lower() for option in q["options"]))
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        deduped.append(q)
+                        if len(deduped) >= state["count"]:
+                            break
+
+                    if len(deduped) < state["count"]:
+                        remaining = state["count"] - len(deduped)
+                        offline = generate_cloze(
+                            index,
+                            lesson_id=state.get("lesson_id"),
+                            count=remaining,
+                            difficulty=state["difficulty"],
+                        )
+                        for q in offline:
+                            key = (q["prompt"].lower(), tuple(option.lower() for option in q["options"]))
+                            if key in seen:
+                                continue
+                            seen.add(key)
+                            deduped.append(q)
+                            if len(deduped) >= state["count"]:
+                                break
+
+                    if deduped:
+                        return {"raw": deduped[: state["count"]], "generated_by": deps.llm.name}
             except (LLMError, ValueError, AttributeError):
                 pass
         raw = generate_cloze(index, lesson_id=state.get("lesson_id"), count=state["count"], difficulty=state["difficulty"])
