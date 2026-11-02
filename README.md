@@ -6,7 +6,7 @@ A full-stack learning platform: students enrol in video courses, track progress,
 |---|---|
 | Web client | React 19, React Router 7, Vite 8, Socket.IO client, three-layer design tokens (light/dark, WCAG AA) |
 | API | Node 22, Express 5, Mongoose 9 (MongoDB), JWT, bcrypt, zod, helmet, Socket.IO 4 |
-| AI service | Python 3.12, FastAPI, **LangGraph**, TF-IDF retrieval, guardrails, optional OpenAI/Azure OpenAI |
+| AI service | Python 3.12, FastAPI, **LangGraph**, TF-IDF retrieval, guardrails, Groq OpenAI |
 | Database | MongoDB 7 (Atlas in production) |
 | Quality | 204 automated tests, 39 real-browser steps, 78-request Postman/Newman run, CI on GitHub Actions |
 
