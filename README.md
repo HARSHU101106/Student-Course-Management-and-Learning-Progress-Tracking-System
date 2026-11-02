@@ -84,15 +84,15 @@ ai-service/    FastAPI + LangGraph (app/graphs, services, guardrails, eval/, tes
 e2e/           real-browser tests + the orchestrator that boots the stack
 postman/       generated collection and environment
 docs/          architecture, data model, API, security, deployment, testing, AI design, user guide, checklist
-frontend-static/  Tasks 2-5 static HTML/CSS/JS prototype (unchanged, mock data)
+frontend-static/  static HTML/CSS/JS prototype (unchanged, mock data)
 ```
 
 ## Documentation index
 
 | Document | Contents |
 |---|---|
-| [`docs/gap-analysis.md`](docs/gap-analysis.md) | The task list: what was found in the upload, what was done, what remains |
-| [`docs/submission-checklist.md`](docs/submission-checklist.md) | Tasks 9-15 mapped to evidence, with the items only you can finish |
+| [`docs/gap-analysis.md`](docs/gap-analysis.md) | The task list: what was found, what was done, what remains |
+| [`docs/submission-checklist.md`](docs/submission-checklist.md) | Tasks mapped to evidence |
 | [`docs/architecture.md`](docs/architecture.md) | Components, flows, design decisions, failure behaviour |
 | [`docs/data-model.md`](docs/data-model.md) | Collections, indexes, ER diagrams, mastery formula |
 | [`docs/api-spec.md`](docs/api-spec.md) | All 58 REST endpoints and the Socket.IO events |
@@ -102,7 +102,3 @@ frontend-static/  Tasks 2-5 static HTML/CSS/JS prototype (unchanged, mock data)
 | [`docs/testing.md`](docs/testing.md) | Test strategy, current results, what is not covered |
 | [`docs/deployment.md`](docs/deployment.md) | Atlas, Render, Vercel and Docker, step by step |
 | [`docs/user-guide.md`](docs/user-guide.md) | Student and administrator walkthrough with screenshots |
-
-## Honest limits
-
-Deployment, Docker, a real LLM and real YouTube could not be exercised in the build environment; see [`docs/gap-analysis.md`](docs/gap-analysis.md) section 3 and the "Known limitations" in [`docs/security.md`](docs/security.md).
